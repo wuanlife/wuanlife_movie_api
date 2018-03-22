@@ -8,22 +8,22 @@ use Illuminate\Notifications\Notifiable;
 class Resource extends Model
 {
     use Notifiable;
-    protected $table = 'resource';
+    protected $table = 'resources';
     /**
      * 指定是否模型应该被戳记时间。
      */
-    public $timestamps = false;
+    public $timestamps = true;
     /**
      * 模型的日期字段保存格式。
      */
-    protected $dateFormat = 'U';
+    protected $dateFormat = 'Y-m-d H:i:s';
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'movies_id','resource_id','resource_type', 'title', 'instruction','sharer','url','password','create_at',
+        'movies_id','resource_id','resource_type', 'title', 'instruction','sharer','url','password',
     ];
 
     /**
