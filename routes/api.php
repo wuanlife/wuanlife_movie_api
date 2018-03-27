@@ -28,11 +28,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //
 //});
 Route::group([
-
-], function (){
-    Route::post('/movies/{id}/resources','Movies\ResourceController@add');
-    Route::delete('/movies/{id}/resources/{rid}','Movies\ResourceController@delete');
-    Route::put('/movies/{id}/resources/{rid}','Movies\ResourceController@edit');
+    'middleware' => [
+        'check_id_token',
+        'check_access_token',
+    ]
+], function () {
+    Route::post('/movies/{id}/resources', 'Movies\ResourceController@add');
+    Route::delete('/movies/{id}/resources/{rid}', 'Movies\ResourceController@delete');
+    Route::put('/movies/{id}/resources/{rid}', 'Movies\ResourceController@edit');
 });
 
 
