@@ -33,8 +33,11 @@ Route::group([
         'check_access_token',
     ]
 ], function () {
+    // 增加资源接口
     Route::post('/movies/{id}/resources', 'Movies\ResourceController@add');
+    // 删除资源接口
     Route::delete('/movies/{id}/resources/{rid}', 'Movies\ResourceController@delete');
+    // 编辑资源接口
     Route::put('/movies/{id}/resources/{rid}', 'Movies\ResourceController@edit');
 });
 
