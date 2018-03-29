@@ -29,8 +29,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 //});
 Route::group([
     'middleware' => [
-        'check_id_token',
-        'check_access_token',
+        'verify_auth'
     ]
 ], function () {
     // 增加资源接口
