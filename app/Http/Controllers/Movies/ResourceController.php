@@ -28,7 +28,7 @@ class ResourceController extends Controller
         $resource = Resource::where([
             'movies_id' => $id,
             'resource_id' => $rid,
-            'sharer' => $request->get('id-token')->id
+            'sharer' => $request->get('id-token')->uid
         ]);
         if (!$resource->get()->count()) {
             return response(['error' => '非法请求，修改失败'], 400);
@@ -48,8 +48,8 @@ class ResourceController extends Controller
                 'url' => $data['url'],
                 'instruction' => $data['instruction'],
                 'sharer' => [
-                    'id' => $request->get('id-token')->id,
-                    'name' => $request->get('id-token')->name
+                    'id' => $request->get('id-token')->uid,
+                    'name' => $request->get('id-token')->uname
                 ]
             ]);
         }
@@ -69,7 +69,7 @@ class ResourceController extends Controller
             [
                 'movies_id' => $id,
                 'resource_id' => $rid,
-                'sharer' => $request->get('id-toen')->id
+                'sharer' => $request->get('id-token')->uid
             ]);
         if (!$resource->get()->count()) {
             return response(['error' => '非法请求，删除失败'], 400);
@@ -106,8 +106,8 @@ class ResourceController extends Controller
                 'url' => $data['url'],
                 'instruction' => $data['instruction'],
                 'sharer' => [
-                    'id' => $request->get('id-token')->id,
-                    'name' => $request->get('id-token')->name
+                    'id' => $request->get('id-token')->uid,
+                    'name' => $request->get('id-token')->uname
                 ]
             ]);
         } else {
@@ -131,7 +131,7 @@ class ResourceController extends Controller
             'password' => $data['password'],
             'url' => $data['url'],
             'instruction' => $data['instruction'],
-            'sharer' => request()->get('id-token')->id
+            'sharer' => request()->get('id-token')->uid
         ]);
     }
 

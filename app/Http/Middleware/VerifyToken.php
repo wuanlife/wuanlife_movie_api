@@ -32,6 +32,7 @@ class VerifyToken
         } catch (\Exception $e) {
             return response(['error' => '权限验证失败:' . $e->getMessage()], 400);
         }
+        $request->attributes->add(['id-token' => json_decode($res->getBody())->id_token]);
         return $next($request);
     }
 }
