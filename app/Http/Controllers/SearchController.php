@@ -13,7 +13,7 @@ class SearchController extends Controller
     //
     public function search()
     {
-        if (!empty($_GET['q']))
+        if (isset($_GET['q']))
         {
             $keywords= $_GET['q'];
             $limit = $_GET['limit'] ?? 20;
@@ -27,7 +27,7 @@ class SearchController extends Controller
             $data['movies'] = $base;
             $data['total'] = Movies_base::where('title', 'like', $keywords.'%')->orwhere('digest', 'like', $keywords.'%')->count();
 
-            return $data;
+            return response($data,200);
         }
         else
         {
