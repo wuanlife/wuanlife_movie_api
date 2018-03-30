@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
 use App\Model\Movies_base;
 use App\Model\Movies_poster;
 use App\Model\Movies_rating;
@@ -15,80 +15,74 @@ class MoviesController extends Controller
     //
     function home()
     {
-    	if(isset($_GET['limit']) && isset($_GET['offset']))
-    	{
-    		$limit = $_GET['limit'];
-    		$offset = $_GET['offset'];
-    		if (isset($_GET['type']) && Movies_type_details::where('type_name',$_GET['type'])) {
-    			$type = $_GET['type'];
-    			$id =DB::table('movies_type_details')->where('type_name',$type)->get()[0]->type_id;
-    			$base = DB::table('movies_base')
-    			->join('movies_poster','movies_poster.id','movies_base.id')
-    			->join('movies_type','movies_type.movies_id','movies_base.id')
-                ->join('movies_rating','movies_rating.id','movies_base.id')
-    			->where('type_id',$id)
-    			->skip($offset)
-    			->take($limit)
-    			->get();
-                $base = $this->d($base);
-                $base['total'] = count(DB::table('movies_base')
-                ->join('movies_poster','movies_poster.id','movies_base.id')
-                ->join('movies_type','movies_type.movies_id','movies_base.id')
-                ->join('movies_rating','movies_rating.id','movies_base.id')
-                ->where('type_id',$id)
-                ->get());
-    			return $base;
-    		}
-    		else
-    		{
-    			$base = DB::table('movies_base')
-    			->join('movies_poster','movies_poster.id','movies_base.id')
-    			->join('movies_rating','movies_rating.id','movies_base.id')
-    			->join('movies_type','movies_type.movies_id','movies_base.id')
-                ->skip($offset)
-                ->take($limit)
-    			->get();
-    			$base = $this->d($base);
+        //主页 limit offset type三个参数
+        if(isset($_GET['limit']) && isset($_GET['offset']))
+        {
+            //limit和offset参数存在
+            $limit = $_GET['limit'] ?? 20;
+            $offset = $_GET['offset'];
+            if (isset($_GET['type']) ) {
+                //type 参数也存在
+                $type = $_GET['type'];
+                $base['movies'] = DB::table('movies_base')
+                    ->join('movies_poster','movies_poster.id','movies_base.id')
+                    ->join('movies_type','movies_type.movies_id','movies_base.id')
+                    ->join('movies_rating','movies_rating.id','movies_base.id')
+                    ->where('type_id',$type)
+                    ->skip($offset)
+                    ->take($limit)
+                    ->select('movies_base.id','movies_base.title','movies_base.digest','movies_poster.url as poster ','movies_type.type_id','movies_rating.rating')
+                    ->get();
+                $base['movies'] = json_decode($base['movies'],true);
+                $base['total'] = DB::table('movies_base')
+                    ->join('movies_poster','movies_poster.id','movies_base.id')
+                    ->join('movies_type','movies_type.movies_id','movies_base.id')
+                    ->join('movies_rating','movies_rating.id','movies_base.id')
+                    ->where('type_id',$type)
+                    ->count();
+                return response($base,200);
+            }
+            else
+            {
+                //type参数不存在
+                $base['movies'] = DB::table('movies_base')
+                    ->join('movies_poster','movies_poster.id','movies_base.id')
+                    ->join('movies_rating','movies_rating.id','movies_base.id')
+                    ->skip($offset)
+                    ->take($limit)
+                    ->select('movies_base.id','movies_base.title','movies_base.digest','movies_poster.url as poster ','movies_rating.rating')
+                    ->get();
+                $base['movies'] = json_decode($base['movies'],true);
                 $base['total'] = count($base);
                 //$data['total'] = count(Movies_base::all());
-                return $base;
-			}
-
-    		//$base = Movies_base::offset($offset)->limit($limit)->get();
-    		//$base = Movies_base::paginate($perPage = $limit, $columns = ['*'], $pageName = '', $page = $offset);
-    		// return $base;
-    	}
-    	else
-    	{
-    		$base = DB::table('movies_base')
-    			->join('movies_poster','movies_poster.id','movies_base.id')
-    			->join('movies_rating','movies_rating.id','movies_base.id')
-    			->join('movies_type','movies_type.movies_id','movies_base.id')
-    			->get();
-            $base = json_decode($base,true); 
-                foreach ($base as $key => $value) {
-                    $base[$key]['poster'] = $base[$key]['url'];
-                    unset($base[$key]['url']);
-                    unset($base[$key]['movies_id']);
-                    unset($base[$key]['type_id']);
-                }
-		$data['movies'] = $base;
-		$data['total'] = count(Movies_base::all());
-    	
-    	return $data;
+                return response($base,200);
+            }
         }
-    }
-
-    function d($base)
-    {
-        //去除多余的
-        $base = json_decode($base,true); 
-                foreach ($base as $key => $value) {
-                    $base[$key]['poster'] = $base[$key]['url'];
-                    unset($base[$key]['url']);
-                    unset($base[$key]['movies_id']);
-                    unset($base[$key]['type_id']);
-                }
-        return $base;
+        else
+        {
+            //offset limit 参数不存在
+            if(isset($_GET['type'])) {
+                //type 参数存在
+                $base['movies'] = DB::table('movies_base')
+                    ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
+                    ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+                    ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
+                    ->where('type_id', $_GET['type'])
+                    ->select('movies_base.id','movies_base.title','movies_base.digest','movies_poster.url as poster ','movies_type.type_id','movies_rating.rating')
+                    ->get();
+            }
+            else {
+                //type参数不存在
+                $base['movies'] = DB::table('movies_base')
+                    ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
+                    ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+                    ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
+                    ->select('movies_base.id','movies_base.title','movies_base.digest','movies_poster.url as poster ','movies_type.type_id','movies_rating.rating')
+                    ->get();
+            }
+            $base['movies'] = json_decode($base['movies'], true);
+            $base['total'] = count(Movies_base::all());
+            return response($base,200);
+        }
     }
 }
