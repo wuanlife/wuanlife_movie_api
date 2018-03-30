@@ -40,4 +40,6 @@ Route::group([
     Route::put('/movies/{id}/resources/{rid}', 'Movies\ResourceController@edit');
 });
 
-
+Route::get('/movies','MoviesController@home');
+Route::get('/movies/search','SearchController@search');
+Route::get('/movies/type','TypeController@type');
