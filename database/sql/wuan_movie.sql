@@ -1,51 +1,12 @@
--- 用户信息表
-CREATE TABLE IF NOT EXISTS users_base
-(
-  id        INT UNSIGNED AUTO_INCREMENT  NOT NULL
-  COMMENT '用户id',
-  mail      VARCHAR(30) COLLATE utf8_bin NOT NULL
-  COMMENT '用户邮箱',
-  name      CHAR(20) COLLATE utf8_bin    NOT NULL
-  COMMENT '用户名',
-  password  CHAR(32) COLLATE utf8_bin    NOT NULL
-  COMMENT '用户密码',
-  create_at TIMESTAMP                    NOT NULL
-  COMMENT '注册时间',
-  PRIMARY KEY (id),
-  KEY login_index(mail, password)
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8_bin
-  COMMENT ='用户基础信息表';
-
--- 用户头像表
-CREATE TABLE IF NOT EXISTS avatar_url
-(
-  user_id    INT UNSIGNED AUTO_INCREMENT   NOT NULL
-  COMMENT '用户id',
-  url        VARCHAR(255) COLLATE utf8_bin NOT NULL
-  COMMENT '图片url',
-  delete_flg TINYINT UNSIGNED              NOT NULL DEFAULT 0
-  COMMENT '图片是否已删除',
-  KEY image_user_id(user_id)
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8_bin
-  COMMENT ='用户头像url表';
-
 -- 用户权限表
 -- 用于实现管理员功能，
 -- 因为取消了group功能，所以身份关系是唯一的，但是考虑到日后的可扩展性，
 -- 此处使用 | 操作符来进行状态的叠加，使用 & 运算符进行状态的判断
 CREATE TABLE IF NOT EXISTS users_auth
 (
-  id   INT UNSIGNED              NOT NULL
+  id   INT UNSIGNED NOT NULL
   COMMENT '用户id',
-  name CHAR(20) COLLATE utf8_bin NOT NULL
-  COMMENT '用户名',
-  auth INT UNSIGNED              NOT NULL
+  auth INT UNSIGNED NOT NULL
   COMMENT '用户权限',
   PRIMARY KEY (id),
   KEY auth(auth)
@@ -74,7 +35,7 @@ CREATE TABLE IF NOT EXISTS auth_detail
 -- 影片基础信息表
 CREATE TABLE IF NOT EXISTS movies_base
 (
-  `id`     INT UNSIGNED AUTO_INCREMENT   NOT NULL
+  `id`     INT UNSIGNED                  NOT NULL
   COMMENT '影片id',
   `title`  VARCHAR(50)  COLLATE utf8_bin NOT NULL
   COMMENT '影片标题',
@@ -87,20 +48,6 @@ CREATE TABLE IF NOT EXISTS movies_base
   COLLATE = utf8_bin
   COMMENT ='影片基础信息表';
 
--- 影片分类表
-CREATE TABLE IF NOT EXISTS movies_sort
-(
-  `movies_id` INT UNSIGNED     NOT NULL
-  COMMENT '影片id',
-  `sort_id`   TINYINT UNSIGNED NOT NULL
-  COMMENT '分类id',
-  PRIMARY KEY (movies_id)
-)
-  ENGINE = InnoDB
-  DEFAULT CHARSET = utf8
-  COLLATE = utf8_bin
-  COMMENT ='影片分类表';
-
 -- 影片详情表
 CREATE TABLE IF NOT EXISTS movies_details
 (
@@ -108,15 +55,17 @@ CREATE TABLE IF NOT EXISTS movies_details
   COMMENT '影片id',
   `original_title` VARCHAR(50) COLLATE utf8_bin  NOT NULL
   COMMENT '影片原名',
+  -- `type_id`   TINYINT UNSIGNED NOT NULL
+  -- COMMENT '影片分类(影片详情页显示)',
+  `genres`         TINYINT UNSIGNED              NOT NULL
+  COMMENT '影片类型(影片详情页显示)',
   `countries`      VARCHAR(15) COLLATE utf8_bin  NOT NULL
   COMMENT '制片国家/地区',
   `year`           CHAR(4) COLLATE utf8_bin      NOT NULL
   COMMENT '年代',
-  `genres`         VARCHAR(25) COLLATE utf8_bin  NOT NULL
-  COMMENT '影片类型',
   `aka`            VARCHAR(255) COLLATE utf8_bin NOT NULL
   COMMENT '影片别名',
-  url_douban       VARCHAR(255) COLLATE utf8_bin NOT NULL
+  `url_douban`     VARCHAR(255) COLLATE utf8_bin NOT NULL
   COMMENT '豆瓣链接',
   PRIMARY KEY (id)
 )
@@ -167,9 +116,9 @@ CREATE TABLE IF NOT EXISTS movies_rating
   COMMENT ='影片评分表';
 
 -- 演员表
-CREATE TABLE IF NOT EXISTS movies_actors
+CREATE TABLE IF NOT EXISTS actors
 (
-  `id`   INT UNSIGNED NOT NULL
+  `id`   INT UNSIGNED NOT NULL AUTO_INCREMENT
   COMMENT '演员id',
   `name` VARCHAR(30) COLLATE utf8_bin COMMENT '演员名',
   PRIMARY KEY (id)
@@ -180,9 +129,9 @@ CREATE TABLE IF NOT EXISTS movies_actors
   COMMENT ='演员表';
 
 -- 导演表
-CREATE TABLE IF NOT EXISTS movies_director
+CREATE TABLE IF NOT EXISTS directors
 (
-  `id`   INT UNSIGNED NOT NULL
+  `id`   INT UNSIGNED NOT NULL AUTO_INCREMENT
   COMMENT '导演id',
   `name` VARCHAR(30) COLLATE utf8_bin COMMENT '导演名',
   PRIMARY KEY (id)
@@ -195,9 +144,9 @@ CREATE TABLE IF NOT EXISTS movies_director
 -- 影片演员表
 CREATE TABLE IF NOT EXISTS movies_actors
 (
-  `movies_id` INT UNSIGNED NOT NULL
+  `movie_id` INT UNSIGNED NOT NULL
   COMMENT '影片id',
-  `actors_id` INT UNSIGNED NOT NULL
+  `actor_id` INT UNSIGNED NOT NULL
   COMMENT '演员id',
   PRIMARY KEY (movies_id, actors_id)
 )
@@ -209,9 +158,9 @@ CREATE TABLE IF NOT EXISTS movies_actors
 -- 影片导演表
 CREATE TABLE IF NOT EXISTS movies_directors
 (
-  `movies_id`    INT UNSIGNED NOT NULL
+  `movie_id`    INT UNSIGNED NOT NULL
   COMMENT '影片id',
-  `directors_id` INT UNSIGNED NOT NULL
+  `director_id` INT UNSIGNED NOT NULL
   COMMENT '导演id',
   PRIMARY KEY (movies_id, directors_id)
 )
@@ -221,27 +170,29 @@ CREATE TABLE IF NOT EXISTS movies_directors
   COMMENT ='影片导演表';
 
 -- 资源表
-CREATE TABLE IF NOT EXISTS resource
+CREATE TABLE IF NOT EXISTS resources
 (
-  `movies_id`     INT UNSIGNED                  NOT NULL
+  `movies_id`     INT UNSIGNED                         NOT NULL
   COMMENT '影片id',
-  `resource_id`   INT UNSIGNED                  NOT NULL
+  `resource_id`   INT UNSIGNED AUTO_INCREMENT          NOT NULL
   COMMENT '资源id',
-  `resource_sort` TINYINT UNSIGNED              NOT NULL
-  COMMENT '资源种类',
-  `title`         VARCHAR(50)  COLLATE utf8_bin NOT NULL
+  `resource_type` TINYINT UNSIGNED                     NOT NULL
+  COMMENT '资源种类id',
+  `title`         VARCHAR(50)  COLLATE utf8_bin        NOT NULL
   COMMENT '资源标题',
-  `instruction`   VARCHAR(255) COLLATE utf8_bin NOT NULL
+  `instruction`   VARCHAR(255) COLLATE utf8_bin        NOT NULL
   COMMENT '资源描述',
-  `sharer`        CHAR(20) COLLATE utf8_bin     NOT NULL
+  `sharer`        CHAR(20) COLLATE utf8_bin            NOT NULL
   COMMENT '分享者id',
-  `url`           VARCHAR(255) COLLATE utf8_bin NOT NULL
+  `url`           VARCHAR(255) COLLATE utf8_bin        NOT NULL
   COMMENT '资源链接',
-  `password`      CHAR(8) COLLATE utf8_bin      NULL
+  `password`      CHAR(8) COLLATE utf8_bin             NULL
   COMMENT '资源密码(网盘)',
-  `create_at`     TIMESTAMP                     NOT NULL
+  `updated_at`    TIMESTAMP                            NOT NULL
+  COMMENT '资源更新时间',
+  `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP  NOT NULL
   COMMENT '资源发布时间',
-  PRIMARY KEY (movies_id, resource_id)
+  PRIMARY KEY (resource_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
@@ -249,29 +200,85 @@ CREATE TABLE IF NOT EXISTS resource
   COMMENT ='资源表';
 
 -- 资源种类字典表
-CREATE TABLE IF NOT EXISTS resource_sort_details
+CREATE TABLE IF NOT EXISTS resources_type_details
 (
-  `sort_id`   TINYINT UNSIGNED          NOT NULL
+  `type_id`   TINYINT UNSIGNED             NOT NULL
   COMMENT '资源种类id',
-  `sort_name` CHAR(10) COLLATE utf8_bin NOT NULL
+  `type_name` VARCHAR(10) COLLATE utf8_bin NOT NULL
   COMMENT '资源种类名',
-  PRIMARY KEY (sort_id)
+  PRIMARY KEY (type_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
   COLLATE = utf8_bin
   COMMENT ='资源种类字典表';
 
--- 分类字典表
-CREATE TABLE IF NOT EXISTS movies_sort_details
+-- 影片类型表(影片详情页面显示)
+CREATE TABLE IF NOT EXISTS movies_genres
 (
-  `sort_id`   TINYINT UNSIGNED          NOT NULL
+  `movies_id` INT UNSIGNED     NOT NULL
+  COMMENT '影片id',
+  `genres_id` TINYINT UNSIGNED NOT NULL
+  COMMENT '影片类型id',
+  PRIMARY KEY (movies_id, genres_id)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8
+  COLLATE = utf8_bin
+  COMMENT ='影片类型表(影片详情页面显示)';
+
+-- 类型字典表(影片详情页显示)
+CREATE TABLE IF NOT EXISTS movies_genres_details
+(
+  `genres_id`   TINYINT UNSIGNED             NOT NULL AUTO_INCREMENT
+  COMMENT '类型id',
+  `genres_name` VARCHAR(10) COLLATE utf8_bin NOT NULL
+  COMMENT '类型名',
+  PRIMARY KEY (genres_id)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8
+  COLLATE = utf8_bin
+  COMMENT ='影片类型表(影片详情页面显示)';
+
+-- 影片分类表(首页分类栏)
+CREATE TABLE IF NOT EXISTS movies_type
+(
+  `movies_id` INT UNSIGNED     NOT NULL
+  COMMENT '影片id',
+  `type_id`   TINYINT UNSIGNED NOT NULL
   COMMENT '分类id',
-  `sort_name` CHAR(10) COLLATE utf8_bin NOT NULL
+  PRIMARY KEY (movies_id, type_id)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8
+  COLLATE = utf8_bin
+  COMMENT ='影片分类表';
+
+-- 分类字典表(首页分类栏)
+CREATE TABLE IF NOT EXISTS movies_type_details
+(
+  `type_id`   TINYINT UNSIGNED             NOT NULL
+  COMMENT '分类id',
+  `type_name` VARCHAR(10) COLLATE utf8_bin NOT NULL
   COMMENT '分类名',
-  PRIMARY KEY (sort_id)
+  PRIMARY KEY (type_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
   COLLATE = utf8_bin
   COMMENT ='分类字典表';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
