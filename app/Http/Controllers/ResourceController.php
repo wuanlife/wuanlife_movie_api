@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Movies;
+namespace App\Http\Controllers;
 
 use App\Resource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use App\Http\Controllers\Controller;
 
 class ResourceController extends Controller
 {
@@ -113,6 +111,16 @@ class ResourceController extends Controller
         } else {
             return response("添加资源失败", 400);
         }
+
+    }
+
+
+    /**
+     * 显示资源接口
+     * @param $movie_id
+     */
+    public function showResources($movie_id)
+    {
 
     }
 

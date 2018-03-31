@@ -1,7 +1,7 @@
 <?php
 
-namespace App\Model;
-use App\Model\Movies_base;
+namespace App;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Movies_poster extends Model
