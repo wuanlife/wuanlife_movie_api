@@ -8,11 +8,10 @@ use GuzzleHttp\Client;
 class VerifyToken
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  \Illuminate\Http\Request $request
-     * @param  \Closure $next
-     * @return mixed
+     * @param $request
+     * @param Closure $next
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|mixed|\Symfony\Component\HttpFoundation\Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function handle($request, Closure $next)
     {
