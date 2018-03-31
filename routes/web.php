@@ -17,5 +17,7 @@ Route::get('/', function () {
 
 
 
-Route::get('/api/movie/{id}','MovieController@moviesdetails');
+Route::get('/api/movies/{id}','MovieController@moviesdetails');//M1 影视详情
+Route::post('/api/movies','MovieController@moviesfind');//M3 发现影视
+
 
