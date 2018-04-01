@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Resource;
+use App\{
+    MoviesBase, Resource
+};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,47 +13,69 @@ class ResourceController extends Controller
 
     /**
      * 编辑资源接口
-     * @param Request $request
      * @param $id
      * @param $rid
+     * @param Request $request
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      */
     public function edit($id, $rid, Request $request)
     {
-        $validator = $this->validator($request->all());
-        if ($validator->fails()) {
-            return response(['error' => $validator->errors()], 422);
-        }
-        $data = $request->all();
-        $resource = Resource::where([
-            'movies_id' => $id,
-            'resource_id' => $rid,
-            'sharer' => $request->get('id-token')->uid
-        ]);
-        if (!$resource->get()->count()) {
-            return response(['error' => '非法请求，修改失败'], 400);
-        }
-        if ($resource->update([
-            'resource_type' => $data['type'],
-            'title' => $data['title'],
-            'password' => $data['password'],
-            'url' => $data['url'],
-            'instruction' => $data['instruction']
-        ])) {
-            return response([
-                'id' => $rid,
-                'type' => $data['type'],
+        try {
+            $validator = $this->validator($request->all());
+            if ($validator->fails()) {
+                return response(['error' => $validator->errors()], 422);
+            }
+            // 检测该影片是否存在于数据库中
+            if (!MoviesBase::where('id', $id)->first()) {
+                throw new \Exception('影片信息不存在');
+            };
+            $data = $request->all();
+            $resource = Resource::where([
+                'movies_id' => $id,
+                'resource_id' => $rid,
+                'sharer' => $request->get('id-token')->uid
+            ]);
+            if (!$resource->get()->count()) {
+                throw new \Exception('非法请求');
+            }
+            if ($resource->update([
+                'resource_type' => $data['type'],
                 'title' => $data['title'],
                 'password' => $data['password'],
                 'url' => $data['url'],
-                'instruction' => $data['instruction'],
-                'sharer' => [
-                    'id' => $request->get('id-token')->uid,
-                    'name' => $request->get('id-token')->uname
-                ]
-            ]);
+                'instruction' => $data['instruction']
+            ])) {
+                return response([
+                    'id' => $rid,
+                    'type' => $data['type'],
+                    'title' => $data['title'],
+                    'password' => $data['password'],
+                    'url' => $data['url'],
+                    'instruction' => $data['instruction'],
+                    'sharer' => [
+                        'id' => $request->get('id-token')->uid,
+                        'name' => $request->get('id-token')->uname
+                    ]
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response(['error' => '编辑资源失败：' . $e->getMessage()], 400);
         }
-        return response("修改资源失败", 400);
+    }
+
+    /**
+     * 验证请求参数
+     * @param array $data
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'type' => 'required',
+            'title' => 'required',
+            'url' => 'required',
+            'instruction' => 'required',
+        ]);
     }
 
     /**
@@ -63,19 +87,27 @@ class ResourceController extends Controller
      */
     public function delete($id, $rid, Request $request)
     {
-        $resource = Resource::where(
-            [
-                'movies_id' => $id,
-                'resource_id' => $rid,
-                'sharer' => $request->get('id-token')->uid
-            ]);
-        if (!$resource->get()->count()) {
-            return response(['error' => '非法请求，删除失败'], 400);
+        try {
+            // 检测该影片是否存在于数据库中
+            if (!MoviesBase::where('id', $id)->first()) {
+                throw new \Exception('影片信息不存在');
+            };
+
+            $resource = Resource::where(
+                [
+                    'movies_id' => $id,
+                    'resource_id' => $rid,
+                    'sharer' => $request->get('id-token')->uid
+                ]);
+            if (!$resource->get()->count()) {
+                throw new \Exception('非法请求');
+            }
+            if ($resource->delete()) {
+                return response([], 204);
+            }
+        } catch (\Exception $e) {
+            return response(['error' => '删除资源失败：' . $e->getMessage()], 400);
         }
-        if ($resource->delete()) {
-            return response([], 204);
-        }
-        return response(['error' => "删除失败"], 400);
     }
 
     /**
@@ -87,40 +119,38 @@ class ResourceController extends Controller
     public function add(Request $request, $id)
     {
 
-        $validator = $this->validator($request->all());
-        if ($validator->fails()) {
-            return response(['error' => $validator->errors()], 422);
+        try {
+            $validator = $this->validator($request->all());
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors(), 422);
+            }
+            // 检测该影片是否存在于数据库中
+            if (!MoviesBase::where('id', $id)->first()) {
+                throw new \Exception('影片信息不存在');
+            };
+            $data = $request->all();
+            $resource = $this->create($data, $id);
+
+            if ($res = $resource->save()) {
+
+                return response([
+                    'id' => $resource->id,
+                    'type' => $data['type'],
+                    'title' => $data['title'],
+                    'password' => $data['password'] ?? 'null',
+                    'url' => $data['url'],
+                    'instruction' => $data['instruction'],
+                    'sharer' => [
+                        'id' => $request->get('id-token')->uid,
+                        'name' => $request->get('id-token')->uname
+                    ]
+                ]);
+            } else {
+                throw new \Exception('未知错误', 400);
+            }
+        } catch (\Exception $e) {
+            return response(['error' => '添加资源失败：' . $e->getMessage()],400);
         }
-        $data = $request->all();
-        $resource = $this->create($data, $id);
-
-        if ($res = $resource->save()) {
-
-            return response([
-                'id' => $resource->id,
-                'type' => $data['type'],
-                'title' => $data['title'],
-                'password' => $data['password'] ?? 'null',
-                'url' => $data['url'],
-                'instruction' => $data['instruction'],
-                'sharer' => [
-                    'id' => $request->get('id-token')->uid,
-                    'name' => $request->get('id-token')->uname
-                ]
-            ]);
-        } else {
-            return response("添加资源失败", 400);
-        }
-
-    }
-
-
-    /**
-     * 显示资源接口
-     * @param $movie_id
-     */
-    public function showResources($movie_id)
-    {
 
     }
 
@@ -144,17 +174,11 @@ class ResourceController extends Controller
     }
 
     /**
-     * 验证请求参数
-     * @param array $data
-     * @return \Illuminate\Contracts\Validation\Validator
+     * 显示资源接口
+     * @param $movie_id
      */
-    protected function validator(array $data)
+    public function showResources($movie_id)
     {
-        return Validator::make($data, [
-            'type' => 'required',
-            'title' => 'required',
-            'url' => 'required',
-            'instruction' => 'required',
-        ]);
+
     }
 }
