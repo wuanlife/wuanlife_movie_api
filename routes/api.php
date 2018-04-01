@@ -43,7 +43,7 @@ Route::group([
 // A1 首页接口
 Route::get('/movies','MoviesController@home');
 // A3 搜索影视
-Route::get('/movies/search','SearchController@search');
+Route::post('/movies/search','SearchController@search');
 // A4 获取分类条目
 Route::get('/movies/type','TypeController@type');
 
