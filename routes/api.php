@@ -48,8 +48,8 @@ Route::post('/movies/search','SearchController@search');
 Route::get('/movies/type','TypeController@type');
 
 // M1 影视详情接口
-Route::get('/movies/{id}','MovieController@moviesDetails');
+Route::get('/movies/{id}','MoviesController@moviesDetails');
 // M2 显示资源接口
 Route::get('/movies/{id}/resources', 'ResourceController@showResources');
 // M3 发现影视接口
-Route::post('/movies','MovieController@addMovie');
+Route::post('/movies','MoviesController@addMovie');
