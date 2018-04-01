@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Actors;
-use App\Directors;
-use App\Movie;
-use App\Movies_base;
-use App\MoviesActors;
-use App\MoviesDetails;
-use App\MoviesDirectors;
-use App\MoviesPoster;
-use App\MoviesRating;
-use App\MoviesSummary;
-use App\MoviesType;
+use App\{
+    Actors,
+    Directors,
+    Movie,
+    Movies_base,
+    MoviesActors,
+    MoviesBase,
+    MoviesDetails,
+    MoviesDirectors,
+    MoviesPoster,
+    MoviesRating,
+    MoviesSummary,
+    MoviesType
+};
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MovieController extends Controller
 {
@@ -128,53 +132,60 @@ class MovieController extends Controller
             $url = $request->post('url');
 
             // 解析 url，获得豆瓣 api 地址
-            $url = $this->parseUrl($url, $type);
+            $url = $this->parseUrl($url);
             $info = $this->accessApi($url);
 
+            DB::beginTransaction();
+
             // 构造分类实例
-            $movie[] = $movie_type = new MoviesType();
+            $movie_type = new MoviesType();
             $movie_type->movies_id = $info->id;
             $movie_type->type_id = $type;
             $movie_type->save();
 
             // 构造影片基础信息实例
-            $movie[] = $base = new Movies_base();
+            $base = new MoviesBase();
             $base->title = $info->title;
-            $base->digest = substr($info->summary, 0, 125);
+            $base->digest = substr($info->summary, 0, 125 * 3);
+            $base->id = $info->id;
+            $base->save();
 
             // 构造影片详细信息实例
-            $movie[] = $detail = new MoviesDetails();
+            $detail = new MoviesDetails();
             $detail->original_title = $info->original_title;
             $detail->genres = implode('/', $info->genres);
             $detail->countries = implode('/', $info->countries);
             $detail->year = $info->year;
             $detail->aka = implode('/', $info->aka);
             $detail->url_douban = $info->alt;
+            $detail->id = $info->id;
+            $detail->save();
 
             // 构造影片剧情简介实例
-            $movie[] = $summary = new MoviesSummary();
+            $summary = new MoviesSummary();
             $summary->summary = $info->summary;
+            $summary->id = $info->id;
+            $summary->save();
 
             // 构造影片海报实例
-            $movie[] = $poster = new MoviesPoster();
+            $poster = new MoviesPoster();
             $poster->url = $info->images->medium;
+            $poster->id = $info->id;
+            $poster->save();
 
             // 构造影片评分实例
-            $movie[] = $rating = new MoviesRating();
-            $rating->rating = $info->rating->medium;
-
-            foreach ($movie as $model) {
-                $model->id = $info->id;
-                $model->save();
-            }
+            $rating = new MoviesRating();
+            $rating->rating = $info->rating->average;
+            $rating->id = $info->id;
+            $rating->save();
 
             // 检测影片演员是否存在于数据库中，如果不存在则添加数据
             $this->actorsExists($info->casts);
             // 构造 影片-演员 关系
-            $actors = new MoviesActors();
-            foreach ($info->cats as $actor) {
-                $actors->movie_id = $actor->id;
-                $actors->actor_id = $info->id;
+            foreach ($info->casts as $actor) {
+                $actors = new MoviesActors();
+                $actors->movie_id = $info->id;
+                $actors->actor_id = $actor->id;
                 $actors->save();
             }
 
@@ -183,14 +194,18 @@ class MovieController extends Controller
             // 构造 影片-导演 关系
             $directors = new MoviesDirectors();
             foreach ($info->directors as $director) {
-                $actors->movie_id = $director->id;
-                $actors->director_id = $director->id;
+                $directors->movie_id = $info->id;
+                $directors->director_id = $director->id;
                 $directors->save();
             }
 
+            DB::commit();
             return response(["id" => $info->id]);
         } catch (\Exception $e) {
-            return response(['error' => '添加失败，' . $e->getMessage()], 400);
+            DB::rollBack();
+            return response([
+                'error' => '添加失败，' . $e->getMessage()
+            ], 400);
         }
     }
 
@@ -394,8 +409,8 @@ class MovieController extends Controller
     private function actorsExists(array $actors)
     {
         $actor_model = new Actors();
-        foreach ($actors as $actor){
-            if (Actors::where('id',$actor->id)->first()){
+        foreach ($actors as $actor) {
+            if (Actors::where('id', $actor->id)->first()) {
                 continue;
             }
             $actor_model->id = $actor->id;
@@ -411,8 +426,8 @@ class MovieController extends Controller
     private function directorsExists(array $directors)
     {
         $directors_model = new Directors();
-        foreach ($directors as $director){
-            if (Directors::where('id',$director->id)->first()){
+        foreach ($directors as $director) {
+            if (Directors::where('id', $director->id)->first()) {
                 continue;
             }
             $directors_model->id = $director->id;
