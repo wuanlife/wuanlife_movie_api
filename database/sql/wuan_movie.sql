@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS movies_base
 (
   `id`     INT UNSIGNED                  NOT NULL
   COMMENT '影片id',
+  `type`   TINYINT UNSIGNED NOT NULL
+  COMMENT '影片分类(影片首页分类)',
   `title`  VARCHAR(50)  COLLATE utf8_bin NOT NULL
   COMMENT '影片标题',
   `digest` VARCHAR(255) COLLATE utf8_bin NOT NULL
@@ -53,12 +55,12 @@ CREATE TABLE IF NOT EXISTS movies_details
 (
   `id`             INT UNSIGNED                  NOT NULL
   COMMENT '影片id',
+    `title`  VARCHAR(50)  COLLATE utf8_bin NOT NULL
+  COMMENT '影片标题',
   `original_title` VARCHAR(50) COLLATE utf8_bin  NOT NULL
   COMMENT '影片原名',
-  -- `type_id`   TINYINT UNSIGNED NOT NULL
-  -- COMMENT '影片分类(影片详情页显示)',
-  `genres`         TINYINT UNSIGNED              NOT NULL
-  COMMENT '影片类型(影片详情页显示)',
+  -- `genres`         VARCHAR(255) COLLATE utf8_bin NOT NULL
+  -- COMMENT '影片类型(影片详情页显示)',
   `countries`      VARCHAR(15) COLLATE utf8_bin  NOT NULL
   COMMENT '制片国家/地区',
   `year`           CHAR(4) COLLATE utf8_bin      NOT NULL
@@ -148,7 +150,7 @@ CREATE TABLE IF NOT EXISTS movies_actors
   COMMENT '影片id',
   `actor_id` INT UNSIGNED NOT NULL
   COMMENT '演员id',
-  PRIMARY KEY (movies_id, actors_id)
+  PRIMARY KEY (movie_id, actor_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
@@ -162,7 +164,7 @@ CREATE TABLE IF NOT EXISTS movies_directors
   COMMENT '影片id',
   `director_id` INT UNSIGNED NOT NULL
   COMMENT '导演id',
-  PRIMARY KEY (movies_id, directors_id)
+  PRIMARY KEY (movie_id, director_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
