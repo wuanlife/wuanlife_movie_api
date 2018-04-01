@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\{
-    MoviesBase, Resource
+    MoviesBase, Resource, ResourceTypeDetails
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -38,8 +38,13 @@ class ResourceController extends Controller
             if (!$resource->get()->count()) {
                 throw new \Exception('非法请求');
             }
+            $type = ResourceTypeDetails::where('type_name', $data['type'])->first();
+            if (!$type) {
+                throw new \Exception('错误的资源类型', 422);
+            }
+            $type_id = $type->type_id;
             if ($resource->update([
-                'resource_type' => $data['type'],
+                'resource_type' => $type_id,
                 'title' => $data['title'],
                 'password' => $data['password'],
                 'url' => $data['url'],
@@ -129,13 +134,19 @@ class ResourceController extends Controller
                 throw new \Exception('影片信息不存在');
             };
             $data = $request->all();
+            $type_cn = $data['type'];
+            $data['type'] = ResourceTypeDetails::where('type_name', $data['type'])->first();
+            if (!$data['type']) {
+                throw new \Exception('错误的资源类型', 422);
+            }
+            $data['type'] = $data['type']->type_id;
             $resource = $this->create($data, $id);
 
             if ($res = $resource->save()) {
 
                 return response([
                     'id' => $resource->id,
-                    'type' => $data['type'],
+                    'type' => $type_cn,
                     'title' => $data['title'],
                     'password' => $data['password'] ?? 'null',
                     'url' => $data['url'],
@@ -149,7 +160,7 @@ class ResourceController extends Controller
                 throw new \Exception('未知错误', 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '添加资源失败：' . $e->getMessage()],400);
+            return response(['error' => '添加资源失败：' . $e->getMessage()], 400);
         }
 
     }
