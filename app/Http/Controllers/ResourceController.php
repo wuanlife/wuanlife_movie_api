@@ -187,9 +187,35 @@ class ResourceController extends Controller
     /**
      * 显示资源接口
      * @param $movie_id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      */
     public function showResources($movie_id)
     {
-
+        try {
+            if (!MoviesBase::find($movie_id)){
+                throw new \Exception('电影信息不存在',400);
+            }
+            $resources = Resource::where('movies_id', $movie_id)->get();
+            foreach ($resources as $resource) {
+                $api_url = env('OIDC-SERVER-GET-USER-INFO-API') . '/' . $resource->sharer;
+                $response = file_get_contents($api_url);
+                $user = json_decode($response);
+                $res[] = [
+                    'id' => $resource->resource_id,
+                    'type' => $resource->resource_type,
+                    'title' => $resource->title,
+                    'instruction' => $resource->instruction,
+                    'url' => $resource->url,
+                    'create_at' => $resource->create_at,
+                    'sharer' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                    ]
+                ];
+            }
+            return response(['resources' => $res ?? []], 200);
+        } catch (\Exception $e) {
+            return response(['error' => '获取资源失败：'.$e->getMessage()], 400);
+        }
     }
 }
