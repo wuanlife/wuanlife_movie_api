@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS resources
   COMMENT '资源标题',
   `instruction`   VARCHAR(255) COLLATE utf8_bin        NOT NULL
   COMMENT '资源描述',
-  `sharer`        CHAR(20) COLLATE utf8_bin            NOT NULL
+  `sharer`        INT UNSIGNED                         NOT NULL
   COMMENT '分享者id',
   `url`           VARCHAR(255) COLLATE utf8_bin        NOT NULL
   COMMENT '资源链接',
