@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS resources
   COMMENT '资源密码(网盘)',
   `updated_at`    TIMESTAMP                            NOT NULL
   COMMENT '资源更新时间',
-  `created_at`    TIMESTAMP DEFAULT CURRENT_TIMESTAMP  NOT NULL
+  `created_at`    TIMESTAMP                            NOT NULL
   COMMENT '资源发布时间',
   PRIMARY KEY (resource_id)
 )
