@@ -20,7 +20,7 @@ class MoviesController extends Controller
         //主页 limit offset type三个参数
         $limit = $_GET['limit'] ?? 20;
         $offset = $_GET['offset'] ?? 0;
-        if (isset($_GET['type'])) {
+        if (!empty($_GET['type'])) {
             //type 参数也存在
             $type = $_GET['type'];
             $base['movies'] = DB::table('movies_base')
@@ -175,7 +175,7 @@ class MoviesController extends Controller
 
             // 构造影片评分实例
             $rating = new MoviesRating();
-            $rating->rating = $info->rating->average;
+            $rating->rating = round($info->rating->average,2);
             $rating->id = $info->id;
             $rating->save();
 
