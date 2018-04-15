@@ -200,13 +200,16 @@ class ResourceController extends Controller
                 $api_url = env('OIDC-SERVER-GET-USER-INFO-API') . '/' . $resource->sharer;
                 $response = file_get_contents($api_url);
                 $user = json_decode($response);
+                $created_at = $resource->created_at;
+                $time = explode(' ',$created_at);
+                $created_at = $time[0] . 'T' . $time[1] . 'Z';
                 $res[] = [
                     'id' => $resource->resource_id,
                     'type' => $resource->resource_type,
                     'title' => $resource->title,
                     'instruction' => $resource->instruction,
                     'url' => $resource->url,
-                    'create_at' => $resource->create_at,
+                    'create_at' => $created_at,
                     'sharer' => [
                         'id' => $user->id,
                         'name' => $user->name,
