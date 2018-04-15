@@ -15,10 +15,15 @@ class VerifyToken
      */
     public function handle($request, Closure $next)
     {
-        $id_token = $request->header('ID-Token') ?? null;
-        $access_token = $request->header('Access-Token') ?? null;
-        $client = new Client(['base_uri' => env('OIDC-SERVER')]);
         try {
+            if (!($id_token = $request->header('ID-Token'))) {
+                throw new \Exception('缺少ID-Token');
+            }
+            if (!($access_token = $request->header('Access-Token'))) {
+                throw new \Exception('缺少Access-Token');
+            }
+
+            $client = new Client(['base_uri' => env('OIDC-SERVER')]);
             $res = $client->request(
                 'GET',
                 '/api/auth',
@@ -31,7 +36,12 @@ class VerifyToken
         } catch (\Exception $e) {
             return response(['error' => '权限验证失败:' . $e->getMessage()], 400);
         }
-        $request->attributes->add(['id-token' => json_decode($res->getBody())->id_token]);
+        $id_token = json_decode(
+            base64_decode(
+                explode('.', $id_token)[1]
+            )
+        );
+        $request->attributes->add(['id-token' => $id_token]);
         return $next($request);
     }
 }
