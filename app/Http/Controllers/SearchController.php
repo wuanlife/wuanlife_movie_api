@@ -5,16 +5,17 @@ namespace App\Http\Controllers;
 use App\{
     Movies_base, Movies_poster, Movies_rating
 };
+use Dingo\Api\Http\Request;
 
 class SearchController extends Controller
 {
 
-    public function search()
+    public function search(Request $request)
     {
-        if (isset($_POST['q'])) {
-            $keywords = $_POST['q'];
-            $limit = $_POST['limit'] ?? 20;
-            $offset = $_POST['offset'] ?? 0;
+        if (!empty($request->input('q'))) {
+            $keywords = $request->input('q');
+            $limit = $request->input('limit') ?? 20;
+            $offset = $request->input('offset') ?? 0;
             $base = Movies_base::where('title', 'like', $keywords . '%')->orwhere('digest', 'like',
                 $keywords . '%')->offset($offset)->limit($limit)->get();
 

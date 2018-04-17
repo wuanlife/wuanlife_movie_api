@@ -117,10 +117,10 @@ class MoviesController extends Controller
     public function addMovie(Request $request)
     {
         try {
-            if (!$type = $request->post('type')) {
+            if (!$type = $request->input('type')) {
                 throw new \Exception('缺少必要参数：type');
             }
-            $url = $request->post('url');
+            $url = $request->input('url');
 
             // 解析 url，获得豆瓣 api 地址并判断该影片是否存在
             $url = $this->parseUrl($url);
