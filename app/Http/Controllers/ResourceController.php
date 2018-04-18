@@ -205,7 +205,7 @@ class ResourceController extends Controller
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
                 $res[] = [
                     'id' => $resource->resource_id,
-                    'type' => $resource->resourceTypeDetails['type_name'],
+                    'type' => ResourceTypeDetails::find($resource->resource_type)->type_name,
                     'title' => $resource->title,
                     'instruction' => $resource->instruction,
                     'url' => $resource->url,
