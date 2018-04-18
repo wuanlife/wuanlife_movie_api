@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\{
     Movies_base, Movies_poster, Movies_rating
 };
-use Dingo\Api\Http\Request;
+use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
