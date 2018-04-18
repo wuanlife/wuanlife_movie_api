@@ -34,4 +34,9 @@ class Resource extends Model
     protected $hidden = [
 //        'password', 'remember_token',
     ];
+
+    public function resourceTypeDetails()
+    {
+        return $this->hasOne('App\ResourceTypeDetails', 'type_id', 'resource_id');
+    }
 }
