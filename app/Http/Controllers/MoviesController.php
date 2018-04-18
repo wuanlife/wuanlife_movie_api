@@ -146,7 +146,7 @@ class MoviesController extends Controller
             $base = new MoviesBase();
             $base->title = $info->title;
             $base->type = $type;
-            $base->digest = substr($info->summary, 0, 125 * 3);
+            $base->digest = substr($info->summary, 0, 255);
             $base->id = $info->id;
             $base->save();
 
