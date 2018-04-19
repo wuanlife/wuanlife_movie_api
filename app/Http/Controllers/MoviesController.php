@@ -93,7 +93,7 @@ class MoviesController extends Controller
             return response([
                 'id' => $id,
                 'title' => $movie->title,
-                'poster'=> MoviesPoster::find($id)->url,
+                'poster_url'=> MoviesPoster::find($id)->url,
                 'original_title' => $movie->original_title,
                 'countries' => $movie->countries,
                 'year' => $movie->year,
