@@ -52,7 +52,7 @@ class MoviesController extends Controller
                     'movies_rating.rating')
                 ->get();
             $base['movies'] = json_decode($base['movies'], true);
-            $base['total'] = count($base['movies']);
+            $base['total'] = MoviesBase::count();
             return response($base, 200);
         }
     }
@@ -93,6 +93,7 @@ class MoviesController extends Controller
             return response([
                 'id' => $id,
                 'title' => $movie->title,
+                'poster'=> MoviesPoster::find($id)->url,
                 'original_title' => $movie->original_title,
                 'countries' => $movie->countries,
                 'year' => $movie->year,
