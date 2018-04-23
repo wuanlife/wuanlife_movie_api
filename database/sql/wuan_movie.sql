@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS movies_base
   COMMENT '影片标题',
   `digest` VARCHAR(255) COLLATE utf8_bin NOT NULL
   COMMENT '摘要',
+  `created_at` TIMESTAMP NOT NULL COLLATE '资源添加时间',
   PRIMARY KEY (id)
 )
   ENGINE = InnoDB
@@ -186,7 +187,7 @@ CREATE TABLE IF NOT EXISTS resources
   COMMENT '资源描述',
   `sharer`        INT UNSIGNED                         NOT NULL
   COMMENT '分享者id',
-  `url`           VARCHAR(255) COLLATE utf8_bin        NOT NULL
+  `url`           VARCHAR(1000) COLLATE utf8_bin        NOT NULL
   COMMENT '资源链接',
   `password`      CHAR(8) COLLATE utf8_bin             NULL
   COMMENT '资源密码(网盘)',
