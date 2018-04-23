@@ -197,7 +197,7 @@ class ResourceController extends Controller
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
             foreach ($resources as $resource) {
-                $api_url = env('OIDC-SERVER-GET-USER-INFO-API') . '/' . $resource->sharer;
+                $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->sharer;
                 $response = file_get_contents($api_url);
                 $user = json_decode($response);
                 $created_at = $resource->created_at;

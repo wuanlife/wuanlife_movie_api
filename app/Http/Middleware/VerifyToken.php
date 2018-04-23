@@ -23,7 +23,7 @@ class VerifyToken
                 throw new \Exception('缺少Access-Token');
             }
 
-            $client = new Client(['base_uri' => env('OIDC-SERVER')]);
+            $client = new Client(['base_uri' => env('OIDC_SERVER')]);
             $res = $client->request(
                 'GET',
                 '/api/auth',
