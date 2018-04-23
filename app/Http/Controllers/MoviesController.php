@@ -30,6 +30,7 @@ class MoviesController extends Controller
                 ->where('type_id', $type)
                 ->skip($offset)
                 ->take($limit)
+                ->orderBy('created_at','desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster ',
                     'movies_type.type_id', 'movies_rating.rating')
                 ->get();
@@ -48,6 +49,7 @@ class MoviesController extends Controller
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
                 ->skip($offset)
                 ->take($limit)
+                ->orderBy('created_at','desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster ',
                     'movies_rating.rating')
                 ->get();
@@ -147,8 +149,9 @@ class MoviesController extends Controller
             $base = new MoviesBase();
             $base->title = $info->title;
             $base->type = $type;
-            $base->digest = substr($info->summary, 0, 250);
+            $base->digest = mb_substr($info->summary, 0, 250);
             $base->id = $info->id;
+            $base->created_at = date('Y-m-d H:i:s',time());
             $base->save();
 
             // 构造影片详细信息实例
@@ -205,7 +208,7 @@ class MoviesController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response([
-                'error' => '添加失败，' . $e->getMessage()
+                'error' => '添加失败，' . $e->getLine()
             ], 400);
         }
     }
