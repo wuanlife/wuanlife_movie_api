@@ -30,7 +30,7 @@ class MoviesController extends Controller
                 ->where('type_id', $type)
                 ->skip($offset)
                 ->take($limit)
-                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster ',
+                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_type.type_id', 'movies_rating.rating')
                 ->get();
             $base['movies'] = json_decode($base['movies'], true);
