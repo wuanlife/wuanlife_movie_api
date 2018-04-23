@@ -31,7 +31,7 @@ class MoviesController extends Controller
                 ->skip($offset)
                 ->take($limit)
                 ->orderBy('created_at','desc')
-                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster ',
+                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_type.type_id', 'movies_rating.rating')
                 ->get();
             $base['movies'] = json_decode($base['movies'], true);
@@ -50,7 +50,7 @@ class MoviesController extends Controller
                 ->skip($offset)
                 ->take($limit)
                 ->orderBy('created_at','desc')
-                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster ',
+                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_rating.rating')
                 ->get();
             $base['movies'] = json_decode($base['movies'], true);
