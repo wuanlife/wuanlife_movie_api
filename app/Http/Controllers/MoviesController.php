@@ -196,8 +196,8 @@ class MoviesController extends Controller
             // 创建影片导演信息
             $this->directorsExists($info->directors);
             // 构造 影片-导演 关系
-            $directors = new MoviesDirectors();
             foreach ($info->directors as $director) {
+                $directors = new MoviesDirectors();
                 $directors->movie_id = $info->id;
                 $directors->director_id = $director->id;
                 $directors->save();
@@ -208,7 +208,7 @@ class MoviesController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return response([
-                'error' => '添加失败，' . $e->getLine()
+                'error' => '添加失败，' . (string)$e->getMessage()
             ], 400);
         }
     }
