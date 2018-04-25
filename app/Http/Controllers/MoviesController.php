@@ -210,10 +210,8 @@ class MoviesController extends Controller
             switch ($e->getCode()) {
                 case 1:
                     return response([
-                        'error' => [
-                            'message' => '添加失败，资源已存在',
-                            'id' => $e->getMessage(),
-                        ]
+                        'error' => '添加失败，资源已存在',
+                        'id' => $e->getMessage(),
                     ], 400);
                 default:
                     return response([
