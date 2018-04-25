@@ -48,7 +48,7 @@ class ResourceController extends Controller
                 'title' => $data['title'],
                 'password' => $data['password'],
                 'url' => $data['url'],
-                'instruction' => $data['instruction']
+                'instruction' => $data['instruction'] ?? '无'
             ])) {
                 return response([
                     'id' => $rid,
@@ -56,7 +56,7 @@ class ResourceController extends Controller
                     'title' => $data['title'],
                     'password' => $data['password'],
                     'url' => $data['url'],
-                    'instruction' => $data['instruction'],
+                    'instruction' => $data['instruction'] ?? '无',
                     'sharer' => [
                         'id' => $request->get('id-token')->uid,
                         'name' => $request->get('id-token')->uname
@@ -79,7 +79,6 @@ class ResourceController extends Controller
             'type' => 'required',
             'title' => 'required',
             'url' => 'required',
-            'instruction' => 'required',
         ]);
     }
 
@@ -179,7 +178,7 @@ class ResourceController extends Controller
             'title' => $data['title'],
             'password' => $data['password'],
             'url' => $data['url'],
-            'instruction' => $data['instruction'],
+            'instruction' => $data['instruction'] ?? '无',
             'sharer' => request()->get('id-token')->uid
         ]);
     }
