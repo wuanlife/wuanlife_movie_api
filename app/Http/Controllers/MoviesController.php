@@ -30,7 +30,7 @@ class MoviesController extends Controller
                 ->where('type_id', $type)
                 ->skip($offset)
                 ->take($limit)
-                ->orderBy('created_at','desc')
+                ->orderBy('created_at', 'desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_type.type_id', 'movies_rating.rating')
                 ->get();
@@ -49,7 +49,7 @@ class MoviesController extends Controller
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
                 ->skip($offset)
                 ->take($limit)
-                ->orderBy('created_at','desc')
+                ->orderBy('created_at', 'desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_rating.rating')
                 ->get();
@@ -95,7 +95,7 @@ class MoviesController extends Controller
             return response([
                 'id' => $id,
                 'title' => $movie->title,
-                'poster_url'=> MoviesPoster::find($id)->url,
+                'poster_url' => MoviesPoster::find($id)->url,
                 'original_title' => $movie->original_title,
                 'countries' => $movie->countries,
                 'year' => $movie->year,
@@ -151,7 +151,7 @@ class MoviesController extends Controller
             $base->type = $type;
             $base->digest = mb_substr($info->summary, 0, 250);
             $base->id = $info->id;
-            $base->created_at = date('Y-m-d H:i:s',time());
+            $base->created_at = date('Y-m-d H:i:s', time());
             $base->save();
 
             // 构造影片详细信息实例
@@ -179,7 +179,7 @@ class MoviesController extends Controller
 
             // 构造影片评分实例
             $rating = new MoviesRating();
-            $rating->rating = round($info->rating->average,2);
+            $rating->rating = round($info->rating->average, 2);
             $rating->id = $info->id;
             $rating->save();
 
@@ -207,9 +207,16 @@ class MoviesController extends Controller
             return response(["id" => $info->id]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response([
-                'error' => '添加失败，' . (string)$e->getMessage()
-            ], 400);
+            switch ($e->getCode()) {
+                case 403:
+                    return response([
+                        'id' => $e->getMessage()
+                    ], 403);
+                default:
+                    return response([
+                        'error' => '添加失败，' . (string)$e->getMessage()
+                    ], 400);
+            }
         }
     }
 
@@ -232,7 +239,7 @@ class MoviesController extends Controller
 
         // 检测该影片是否存在于数据库中
         if (MoviesBase::where('id', $id)->first()) {
-            throw new \Exception('该影片已经存在');
+            throw new \Exception($id, 403);
         };
 
         // 组合出豆瓣 api 的地址
