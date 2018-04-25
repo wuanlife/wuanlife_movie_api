@@ -1,15 +1,11 @@
 -- 用户权限表
--- 用于实现管理员功能，
--- 因为取消了group功能，所以身份关系是唯一的，但是考虑到日后的可扩展性，
--- 此处使用 | 操作符来进行状态的叠加，使用 & 运算符进行状态的判断
 CREATE TABLE IF NOT EXISTS users_auth
 (
   id   INT UNSIGNED NOT NULL
   COMMENT '用户id',
   auth INT UNSIGNED NOT NULL
   COMMENT '用户权限',
-  PRIMARY KEY (id),
-  KEY auth(auth)
+  PRIMARY KEY (id, auth)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
@@ -17,15 +13,13 @@ CREATE TABLE IF NOT EXISTS users_auth
   COMMENT ='用户权限表';
 
 -- 权限对应关系表
--- 使用 << 运算符来得到不同的状态码
 CREATE TABLE IF NOT EXISTS auth_detail
 (
   id        INT UNSIGNED AUTO_INCREMENT  NOT NULL
   COMMENT '权限id(偏移量)',
   indentity VARCHAR(30) COLLATE utf8_bin NOT NULL
   COMMENT '权限类型',
-  PRIMARY KEY (id),
-  UNIQUE KEY (indentity)
+  PRIMARY KEY (id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
@@ -35,15 +29,16 @@ CREATE TABLE IF NOT EXISTS auth_detail
 -- 影片基础信息表
 CREATE TABLE IF NOT EXISTS movies_base
 (
-  `id`     INT UNSIGNED                  NOT NULL
+  `id`         INT UNSIGNED                  NOT NULL
   COMMENT '影片id',
-  `type`   TINYINT UNSIGNED NOT NULL
+  `type`       TINYINT UNSIGNED              NOT NULL
   COMMENT '影片分类(影片首页分类)',
-  `title`  VARCHAR(50)  COLLATE utf8_bin NOT NULL
+  `title`      VARCHAR(50)  COLLATE utf8_bin NOT NULL
   COMMENT '影片标题',
-  `digest` VARCHAR(255) COLLATE utf8_bin NOT NULL
+  `digest`     VARCHAR(255) COLLATE utf8_bin NOT NULL
   COMMENT '摘要',
-  `created_at` TIMESTAMP NOT NULL COLLATE '资源添加时间',
+  `created_at` TIMESTAMP                     NOT NULL
+  COLLATE '资源添加时间',
   PRIMARY KEY (id)
 )
   ENGINE = InnoDB
@@ -56,7 +51,7 @@ CREATE TABLE IF NOT EXISTS movies_details
 (
   `id`             INT UNSIGNED                  NOT NULL
   COMMENT '影片id',
-    `title`  VARCHAR(50)  COLLATE utf8_bin NOT NULL
+  `title`          VARCHAR(50)  COLLATE utf8_bin NOT NULL
   COMMENT '影片标题',
   `original_title` VARCHAR(50) COLLATE utf8_bin  NOT NULL
   COMMENT '影片原名',
@@ -175,25 +170,25 @@ CREATE TABLE IF NOT EXISTS movies_directors
 -- 资源表
 CREATE TABLE IF NOT EXISTS resources
 (
-  `movies_id`     INT UNSIGNED                         NOT NULL
+  `movies_id`     INT UNSIGNED                   NOT NULL
   COMMENT '影片id',
-  `resource_id`   INT UNSIGNED AUTO_INCREMENT          NOT NULL
+  `resource_id`   INT UNSIGNED AUTO_INCREMENT    NOT NULL
   COMMENT '资源id',
-  `resource_type` TINYINT UNSIGNED                     NOT NULL
+  `resource_type` TINYINT UNSIGNED               NOT NULL
   COMMENT '资源种类id',
-  `title`         VARCHAR(50)  COLLATE utf8_bin        NOT NULL
+  `title`         VARCHAR(50)  COLLATE utf8_bin  NOT NULL
   COMMENT '资源标题',
-  `instruction`   VARCHAR(255) COLLATE utf8_bin        NOT NULL
+  `instruction`   VARCHAR(255) COLLATE utf8_bin  NOT NULL
   COMMENT '资源描述',
-  `sharer`        INT UNSIGNED                         NOT NULL
+  `sharer`        INT UNSIGNED                   NOT NULL
   COMMENT '分享者id',
-  `url`           VARCHAR(1000) COLLATE utf8_bin        NOT NULL
+  `url`           VARCHAR(1000) COLLATE utf8_bin NOT NULL
   COMMENT '资源链接',
-  `password`      CHAR(8) COLLATE utf8_bin             NULL
+  `password`      CHAR(8) COLLATE utf8_bin       NULL
   COMMENT '资源密码(网盘)',
-  `updated_at`    TIMESTAMP                            NOT NULL
+  `updated_at`    TIMESTAMP                      NOT NULL
   COMMENT '资源更新时间',
-  `created_at`    TIMESTAMP                            NOT NULL
+  `created_at`    TIMESTAMP                      NOT NULL
   COMMENT '资源发布时间',
   PRIMARY KEY (resource_id)
 )
@@ -271,17 +266,3 @@ CREATE TABLE IF NOT EXISTS movies_type_details
   DEFAULT CHARSET = utf8
   COLLATE = utf8_bin
   COMMENT ='分类字典表';
-
-
-
-
-
-
-
-
-
-
-
-
-
-
