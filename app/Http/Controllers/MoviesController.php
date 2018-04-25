@@ -208,10 +208,13 @@ class MoviesController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             switch ($e->getCode()) {
-                case 403:
+                case 1:
                     return response([
-                        'id' => $e->getMessage()
-                    ], 403);
+                        'error' => [
+                            'message' => '添加失败，资源已存在',
+                            'id' => $e->getMessage(),
+                        ]
+                    ], 400);
                 default:
                     return response([
                         'error' => '添加失败，' . (string)$e->getMessage()
@@ -239,7 +242,7 @@ class MoviesController extends Controller
 
         // 检测该影片是否存在于数据库中
         if (MoviesBase::where('id', $id)->first()) {
-            throw new \Exception($id, 403);
+            throw new \Exception($id, 1);
         };
 
         // 组合出豆瓣 api 的地址
