@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Model\Human;
 
 use Illuminate\Database\Eloquent\Model;
 

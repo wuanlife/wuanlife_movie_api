@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Model\Movies;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +10,6 @@ class MoviesActors extends Model
     protected $table = 'movies_actors';
 
     public function actor(){
-        return $this->hasOne('App\Actors','id','actor_id');
+        return $this->hasOne('App\Model\Human\Actors','id','actor_id');
     }
 }

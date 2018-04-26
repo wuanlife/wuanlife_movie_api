@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Model\Movies;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Movies_type_details extends Model
+class MoviesTypeDetails extends Model
 {
     //
     protected $table = 'movies_type_details';

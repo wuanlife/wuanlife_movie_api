@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\{
-    Actors, Directors, MoviesActors, MoviesBase, MoviesDetails, MoviesDirectors, MoviesGenres, MoviesGenresDetails, MoviesPoster, MoviesRating, MoviesSummary, MoviesType
+use App\Model\Human\{
+    Actors, Directors
+};
+use App\Model\Movies\{
+    MoviesActors, MoviesBase, MoviesDetails, MoviesDirectors, MoviesGenres, MoviesGenresDetails, MoviesPoster, MoviesRating, MoviesSummary, MoviesType
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

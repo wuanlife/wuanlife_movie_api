@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Model\Movies;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +10,6 @@ class MoviesGenres extends Model
     protected $table = 'movies_genres';
 
     public function detail(){
-        return $this->hasOne('App\MoviesGenresDetails','genres_id','genres_id');
+        return $this->hasOne('App\Model\Movies\MoviesGenresDetails','genres_id','genres_id');
     }
 }

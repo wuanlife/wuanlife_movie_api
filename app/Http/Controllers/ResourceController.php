@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\{
-    MoviesBase, Resource, ResourceTypeDetails
+use App\Model\Resources\{
+    Resource, ResourceTypeDetails
 };
+use App\Model\Movies\MoviesBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -191,8 +192,8 @@ class ResourceController extends Controller
     public function showResources($movie_id)
     {
         try {
-            if (!MoviesBase::find($movie_id)){
-                throw new \Exception('电影信息不存在',400);
+            if (!MoviesBase::find($movie_id)) {
+                throw new \Exception('电影信息不存在', 400);
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
             foreach ($resources as $resource) {
@@ -200,7 +201,7 @@ class ResourceController extends Controller
                 $response = file_get_contents($api_url);
                 $user = json_decode($response);
                 $created_at = $resource->created_at;
-                $time = explode(' ',$created_at);
+                $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
                 $res[] = [
                     'id' => $resource->resource_id,
@@ -217,7 +218,7 @@ class ResourceController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
-            return response(['error' => '获取资源失败：'.$e->getMessage()], 400);
+            return response(['error' => '获取资源失败：' . $e->getMessage()], 400);
         }
     }
 }
