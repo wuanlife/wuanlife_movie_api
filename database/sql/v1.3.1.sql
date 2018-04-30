@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS movies_base
   `digest`     VARCHAR(255) COLLATE utf8_bin NOT NULL
   COMMENT '摘要',
   `created_at` TIMESTAMP                     NOT NULL
-  COLLATE '资源添加时间',
+  COMMENT '资源添加时间',
   PRIMARY KEY (id)
 )
   ENGINE = InnoDB
