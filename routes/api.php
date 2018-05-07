@@ -56,3 +56,5 @@ Route::post('/movies','MoviesController@addMovie');
 
 // M1 获取资源审核列表
 Route::post('/resource/background', 'ResourceController@background');
+// M2 审核资源
+Route::put('/resource/{id}/background', 'ResourceController@review');

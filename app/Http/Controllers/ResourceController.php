@@ -223,11 +223,14 @@ class ResourceController extends Controller
         }
     }
 
-    // 获取资源审核列表
+    /**
+     * 获取资源审核列表
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
     public function background()
     {
         try {
-            $resources = UnreviewedResources::with('re1source.movie')->get();
+            $resources = UnreviewedResources::with('resource.movie')->get();
             foreach ($resources as $resource) {
                 $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->resource->sharer;
                 $response = file_get_contents($api_url);
@@ -245,6 +248,24 @@ class ResourceController extends Controller
                 ];
             }
             return response(['resources' => $res ?? []], 200);
+        } catch (\Exception $e) {
+            return response(['error' => '非法请求'], 400);
+        }
+    }
+
+
+    /**
+     * 审核资源
+     * @param $resource_id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
+    public function review($resource_id)
+    {
+        try {
+            $res = UnreviewedResources::where('resources_id', $resource_id)->delete();
+            if ($res) {
+                return response('操作成功', 204);
+            }
         } catch (\Exception $e) {
             return response(['error' => '非法请求'], 400);
         }
