@@ -39,4 +39,9 @@ class Resource extends Model
     {
         return $this->hasOne('App\Model\Resources\ResourceTypeDetails', 'type_id', 'resource_id');
     }
+
+    public function movie()
+    {
+        return $this->belongsTo('App\Model\Movies\MoviesBase', 'resource_id', 'id');
+    }
 }

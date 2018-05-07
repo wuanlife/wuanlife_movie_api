@@ -53,3 +53,6 @@ Route::get('/movies/{id}','MoviesController@moviesDetails');
 Route::get('/movies/{id}/resources', 'ResourceController@showResources');
 // M3 发现影视接口
 Route::post('/movies','MoviesController@addMovie');
+
+// M1 获取资源审核列表
+Route::post('/resource/background', 'ResourceController@background');

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\Movies\MoviesBase;
 use App\Model\Resources\{
     Resource, ResourceTypeDetails
 };
-use App\Model\Movies\MoviesBase;
+use App\Model\Resources\UnreviewedResources;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -219,6 +220,33 @@ class ResourceController extends Controller
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
             return response(['error' => '获取资源失败：' . $e->getMessage()], 400);
+        }
+    }
+
+    // 获取资源审核列表
+    public function background()
+    {
+        try {
+            $resources = UnreviewedResources::with('re1source.movie')->get();
+            foreach ($resources as $resource) {
+                $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->resource->sharer;
+                $response = file_get_contents($api_url);
+                $user = json_decode($response);
+                $created_at = $resource->resource->created_at;
+                $time = explode(' ', $created_at);
+                $created_at = $time[0] . 'T' . $time[1] . 'Z';
+                $res[] = [
+                    'movie_id' => $resource->resource->movies_id,
+                    'resource_id' => $resource->resource->resource_id,
+                    'name' => $resource->resource->title,
+                    'instruction' => $resource->resource->instruction,
+                    'sharer' => $user->name,
+                    'create_at' => $created_at,
+                ];
+            }
+            return response(['resources' => $res ?? []], 200);
+        } catch (\Exception $e) {
+            return response(['error' => '非法请求'], 400);
         }
     }
 }
