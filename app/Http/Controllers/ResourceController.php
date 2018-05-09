@@ -270,4 +270,35 @@ class ResourceController extends Controller
             return response(['error' => '非法请求'], 400);
         }
     }
+
+    /**
+     * 删除资源
+     * @param $resource_id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
+    public function deleteResource($resource_id)
+    {
+        try {
+            $resource = UnreviewedResources::with('resource.movie')->where('resources_id', $resource_id)->first();
+            // 检测该影片是否存在于数据库中
+            if (!MoviesBase::where('id', $resource->resource->movies_id)->first()) {
+                throw new \Exception('影片信息不存在');
+            };
+
+            $resource = Resource::where(
+                [
+                    'movies_id' => $resource->resource->movies_id,
+                    'resource_id' => $resource_id,
+                    'sharer' => $resource->resource->sharer
+                ]);
+            if (!$resource->get()->count()) {
+                throw new \Exception('非法请求');
+            }
+            if ($resource->delete()) {
+                return response([], 204);
+            }
+        } catch (\Exception $e) {
+            throw new \Exception('非法请求');
+        }
+    }
 }
