@@ -298,7 +298,7 @@ class ResourceController extends Controller
                 return response([], 204);
             }
         } catch (\Exception $e) {
-            throw new \Exception('非法请求');
+            return response(['error' => '非法请求'], 400);
         }
     }
 }
