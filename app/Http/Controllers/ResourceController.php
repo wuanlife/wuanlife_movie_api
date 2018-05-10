@@ -231,7 +231,11 @@ class ResourceController extends Controller
     {
         try {
             $resources = UnreviewedResources::with('resource.movie')->get();
+            $res = [];
             foreach ($resources as $resource) {
+                if (!$resource->resource) {
+                    break;
+                }
                 $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->resource->sharer;
                 $response = file_get_contents($api_url);
                 $user = json_decode($response);
@@ -249,6 +253,7 @@ class ResourceController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
+            echo $e->getMessage();exit;
             return response(['error' => '非法请求'], 400);
         }
     }
@@ -265,6 +270,8 @@ class ResourceController extends Controller
             $res = UnreviewedResources::where('resources_id', $resource_id)->delete();
             if ($res) {
                 return response('操作成功', 204);
+            } else {
+                return response(['error' => '资源不存在'], 400);
             }
         } catch (\Exception $e) {
             return response(['error' => '非法请求'], 400);
@@ -292,7 +299,7 @@ class ResourceController extends Controller
                     'sharer' => $resource->resource->sharer
                 ]);
             if (!$resource->get()->count()) {
-                throw new \Exception('非法请求');
+                throw new \Exception('资源不存在');
             }
             if ($resource->delete()) {
                 return response([], 204);
