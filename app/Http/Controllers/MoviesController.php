@@ -30,10 +30,12 @@ class MoviesController extends Controller
                 ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
                 ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+                ->join('resources', 'resources.movies_id', 'movies_base.id', 'left')
                 ->where('type_id', $type)
                 ->skip($offset)
                 ->take($limit)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('resources.created_at', 'desc')
+                ->orderBy('movies_base.created_at', 'desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_type.type_id', 'movies_rating.rating')
                 ->get();
@@ -50,9 +52,11 @@ class MoviesController extends Controller
             $base['movies'] = DB::table('movies_base')
                 ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+                ->join('resources', 'resources.movies_id', 'movies_base.id', 'left')
                 ->skip($offset)
                 ->take($limit)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('resources.created_at', 'desc')
+                ->orderBy('movies_base.created_at', 'desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_rating.rating')
                 ->get();
