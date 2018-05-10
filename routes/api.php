@@ -55,8 +55,8 @@ Route::get('/movies/{id}/resources', 'ResourceController@showResources');
 Route::post('/movies','MoviesController@addMovie');
 
 // M1 获取资源审核列表
-Route::post('/resource/background', 'ResourceController@background');
+Route::post('/resource/background', 'UnreviewedResourceController@index');
 // M2 审核资源
-Route::put('/resource/{id}/background', 'ResourceController@review');
+Route::put('/resource/{id}/background', 'UnreviewedResourceController@review');
 // M3 删除资源
-Route::delete('/resource/{id}/background', 'ResourceController@deleteResource');
+Route::delete('/resource/{id}/background', 'UnreviewedResourceController@deleteResource');
