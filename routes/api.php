@@ -39,9 +39,11 @@ Route::group([
     // R3 编辑资源接口
     Route::put('/movies/{id}/resources/{rid}', 'ResourceController@edit');
     // 获取午安影视积分接口
-    Route::get('/users/{id}/movie_score', 'UserController@getMovieScore');
+    Route::get('/users/{id}/movie_point', 'UserController@getMoviePoint');
     // 获取午安账号积分接口
-    Route::get('/users/{id}/wuan_score', 'UserController@getWuanScore');
+    Route::get('/users/{id}/wuan_point', 'UserController@getWuanPoint');
+    // 兑换午安账号积分接口
+    Route::put('/users/{id}/point','UserController@redeemWuanPoint');
 });
 
 // A1 首页接口

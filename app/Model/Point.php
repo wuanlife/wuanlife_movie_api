@@ -11,9 +11,9 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Scores extends Model
+class Point extends Model
 {
     protected $primaryKey = 'user_id';
-    protected $table = 'scores';
+    protected $table = 'point';
     public $timestamps = false;
 }
