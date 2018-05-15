@@ -53,3 +53,11 @@ Route::get('/movies/{id}','MoviesController@moviesDetails');
 Route::get('/movies/{id}/resources', 'ResourceController@showResources');
 // M3 发现影视接口
 Route::post('/movies','MoviesController@addMovie');
+
+// Lwy
+// 新增管理员
+Route::post('/admin','AdminController@addAdmin');
+// 取消管理员
+Route::delete('/admin/{id}','AdminController@deleteAdmin');
+// 获取管理列表
+Route::get('/admin','AdminController@listAdmin');
