@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS users_auth
 CREATE TABLE IF NOT EXISTS auth_detail
 (
   id        INT UNSIGNED AUTO_INCREMENT  NOT NULL
-  COMMENT '权限id(偏移量)',
+  COMMENT '权限id',
   indentity VARCHAR(30) COLLATE utf8_bin NOT NULL
   COMMENT '权限类型',
   PRIMARY KEY (id)

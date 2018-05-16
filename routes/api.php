@@ -45,6 +45,13 @@ Route::group([
     Route::put('/resource/{id}/background', 'UnreviewedResourceController@review');
     // M3 删除资源
     Route::delete('/resource/{id}/background', 'UnreviewedResourceController@deleteResource');
+
+    // 获取午安影视积分接口
+    Route::get('/users/{id}/movie_point', 'UserController@getMoviePoint');
+    // 获取午安账号积分接口
+    Route::get('/users/{id}/wuan_point', 'UserController@getWuanPoint');
+    // 兑换午安账号积分接口
+    Route::put('/users/{id}/point','UserController@redeemWuanPoint');
 });
 
 // A1 首页接口
