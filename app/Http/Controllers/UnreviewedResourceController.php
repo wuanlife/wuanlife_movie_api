@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Movies\MoviesBase;
 use App\Model\Resources\Resource;
 use App\Model\Resources\UnreviewedResources;
+use Illuminate\Support\Facades\DB;
 
 class UnreviewedResourceController extends Controller
 {
@@ -19,7 +19,7 @@ class UnreviewedResourceController extends Controller
             $res = [];
             foreach ($resources as $resource) {
                 if (!$resource->resource) {
-                    break;
+                    continue;
                 }
                 $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->resource->sharer;
                 $response = file_get_contents($api_url);
@@ -38,8 +38,7 @@ class UnreviewedResourceController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
-            echo $e->getMessage();exit;
-            return response(['error' => '非法请求'], 400);
+            return response(['error' => '获取待审核资源失败' . $e->getMessage()], 400);
         }
     }
 
@@ -52,14 +51,14 @@ class UnreviewedResourceController extends Controller
     public function review($resource_id)
     {
         try {
-            $res = UnreviewedResources::where('resources_id', $resource_id)->delete();
-            if ($res) {
-                return response('操作成功', 204);
-            } else {
+            $result = UnreviewedResources::where('resources_id', $resource_id)->get();
+            if (($result->isEmpty())) {
                 return response(['error' => '资源不存在'], 400);
             }
+            $result->delete();
+            return response('操作成功', 204);
         } catch (\Exception $e) {
-            return response(['error' => '非法请求'], 400);
+            return response(['error' => '审核失败' . $e->getMessage()], 400);
         }
     }
 
@@ -70,27 +69,15 @@ class UnreviewedResourceController extends Controller
      */
     public function deleteResource($resource_id)
     {
+        DB::beginTransaction();
         try {
-            $resource = UnreviewedResources::with('resource.movie')->where('resources_id', $resource_id)->first();
-            // 检测该影片是否存在于数据库中
-            if (!MoviesBase::where('id', $resource->resource->movies_id)->first()) {
-                throw new \Exception('影片信息不存在');
-            };
-
-            $resource = Resource::where(
-                [
-                    'movies_id' => $resource->resource->movies_id,
-                    'resource_id' => $resource_id,
-                    'sharer' => $resource->resource->sharer
-                ]);
-            if (!$resource->get()->count()) {
-                throw new \Exception('资源不存在');
-            }
-            if ($resource->delete()) {
-                return response([], 204);
-            }
+            UnreviewedResources::where('resources_id', $resource_id)->delete();
+            Resource::where('resource_id', $resource_id)->delete();
+            DB::commit();
+            return response([], 204);
         } catch (\Exception $e) {
-            return response(['error' => '非法请求'], 400);
+            DB::rollBack();
+            return response(['error' => '删除失败' . $e->getMessage()], 400);
         }
     }
 }
