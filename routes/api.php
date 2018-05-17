@@ -47,11 +47,11 @@ Route::group([
     Route::delete('/resource/{id}/background', 'UnreviewedResourceController@deleteResource');
 
     // 获取午安影视积分接口
-    Route::get('/users/{id}/movie_point', 'UserController@getMoviePoint');
+    Route::get('/users/{id}/movie_point', 'UsersController@getMoviePoint');
     // 获取午安账号积分接口
-    Route::get('/users/{id}/wuan_point', 'UserController@getWuanPoint');
+    Route::get('/users/{id}/wuan_point', 'UsersController@getWuanPoint');
     // 兑换午安账号积分接口
-    Route::put('/users/{id}/point','UserController@redeemWuanPoint');
+    Route::put('/users/{id}/point','UsersController@redeemWuanPoint');
 });
 
 // A1 首页接口
@@ -61,9 +61,9 @@ Route::post('/movies/search','SearchController@search');
 // A4 获取分类条目
 Route::get('/movies/type','TypeController@type');
 
-// M1 影视详情接口
+// Z1 影视详情接口
 Route::get('/movies/{id}','MoviesController@moviesDetails');
-// M2 显示资源接口
+// Z2 显示资源接口
 Route::get('/movies/{id}/resources', 'ResourceController@showResources');
-// M3 发现影视接口
+// Z3 发现影视接口
 Route::post('/movies','MoviesController@addMovie');
