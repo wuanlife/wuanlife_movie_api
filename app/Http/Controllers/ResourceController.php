@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\Movies\MoviesBase;
 use App\Model\Resources\{
     Resource, ResourceTypeDetails
 };
-use App\Model\Movies\MoviesBase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
