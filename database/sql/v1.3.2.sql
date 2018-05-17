@@ -268,11 +268,11 @@ CREATE TABLE IF NOT EXISTS movies_type_details
   COMMENT ='分类字典表';
 
 -- 积分表
-CREATE TABLE IF NOT EXISTS scores
+CREATE TABLE IF NOT EXISTS points
 (
   user_id INT UNSIGNED NOT NULL
   COMMENT '用户id',
-  scores  INT UNSIGNED NOT NULL
+  points  INT UNSIGNED NOT NULL
   COMMENT '午安影视积分',
   PRIMARY KEY (user_id)
 )
@@ -293,3 +293,14 @@ CREATE TABLE IF NOT EXISTS unreviewed_resources
   COLLATE = utf8_bin
   COMMENT = '待审核资源表';
 
+-- 积分兑换记录表
+CREATE TABLE points_order
+(
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT UNSIGNED NOT NULL
+  COMMENT '用户id',
+  points_alert  INT NOT NULL
+  COMMENT '午安影视积分',
+  created_at TIMESTAMP,
+  PRIMARY KEY (id)
+)
