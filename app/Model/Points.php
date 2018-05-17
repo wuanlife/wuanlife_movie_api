@@ -11,9 +11,13 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Point extends Model
+class Points extends Model
 {
-    protected $primaryKey = 'user_id';
-    protected $table = 'point';
     public $timestamps = false;
+    protected $primaryKey = 'user_id';
+    protected $table = 'points';
+    protected $fillable = [
+        'user_id',
+        'points',
+    ];
 }
