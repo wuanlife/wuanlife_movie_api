@@ -9,7 +9,8 @@
 namespace App\Http\Controllers;
 
 
-use App\Model\Points;
+use App\Model\Points\Points;
+use App\Model\Points\PointsOrder;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
@@ -74,6 +75,10 @@ class UsersController extends Controller
                     throw new \Exception('积分不足,兑换失败');
                 }
                 Points::find($id_token->uid)->decrement('points', 4 * $sub_point);
+                PointsOrder::create([
+                    'user_id' => $id,
+                    'points_alert' => -4 * $sub_point,
+                ]);
                 $client = new Client(['base_uri' => env('OIDC_SERVER')]);
                 $res = $client->request(
                     'PUT',
