@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Points;
+namespace App\Models\Points;
 
 use Illuminate\Database\Eloquent\Model;
 

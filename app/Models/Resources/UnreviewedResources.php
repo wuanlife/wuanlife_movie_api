@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Resources;
+namespace App\Models\Resources;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,6 +15,6 @@ class UnreviewedResources extends Model
 
     public function resource()
     {
-        return $this->hasOne('App\Model\Resources\Resource', 'resource_id', 'resource_id');
+        return $this->hasOne('App\Models\Resources\Resource', 'resource_id', 'resource_id');
     }
 }
