@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS points
 -- 待审核资源表a
 CREATE TABLE IF NOT EXISTS unreviewed_resources
 (
-  resources_id INT UNSIGNED NOT NULL
+  resource_id INT UNSIGNED NOT NULL
   COMMENT '资源id',
-  PRIMARY KEY (resources_id)
+  PRIMARY KEY (resource_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8
