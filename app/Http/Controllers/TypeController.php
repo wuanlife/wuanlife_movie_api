@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Movies\MoviesTypeDetails;
+use App\Models\Movies\MoviesTypeDetails;
 
 class TypeController extends Controller
 {

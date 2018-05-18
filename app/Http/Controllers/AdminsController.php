@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Points\Points;
-use App\Model\Resources\Resource;
-use App\Model\Resources\UnreviewedResources;
+use App\Models\Points\Points;
+use App\Models\Resources\Resource;
+use App\Models\Resources\UnreviewedResources;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

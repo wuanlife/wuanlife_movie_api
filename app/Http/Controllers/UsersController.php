@@ -9,8 +9,8 @@
 namespace App\Http\Controllers;
 
 
-use App\Model\Points\Points;
-use App\Model\Points\PointsOrder;
+use App\Models\Points\Points;
+use App\Models\Points\PointsOrder;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;

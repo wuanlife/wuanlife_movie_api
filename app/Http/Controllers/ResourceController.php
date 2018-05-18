@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Movies\MoviesBase;
-use App\Model\Resources\{
+use App\Models\Movies\MoviesBase;
+use App\Models\Resources\{
     Resource, ResourceTypeDetails, UnreviewedResources
 };
 use GuzzleHttp\Client;

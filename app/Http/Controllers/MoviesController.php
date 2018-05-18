@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Human\{
+use App\Models\Human\{
     Actors, Directors
 };
-use App\Model\Movies\{
+use App\Models\Movies\{
     MoviesActors, MoviesBase, MoviesDetails, MoviesDirectors, MoviesGenres, MoviesGenresDetails, MoviesPoster, MoviesRating, MoviesSummary, MoviesType
 };
 use Illuminate\Http\Request;
