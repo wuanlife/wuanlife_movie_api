@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS unreviewed_resources
   COMMENT = '待审核资源表';
 
 -- 积分兑换记录表
-CREATE TABLE points_order
+CREATE TABLE IF NOT EXISTS points_order
 (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL
