@@ -7,14 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class UnreviewedResources extends Model
 {
     public $timestamps = false;
-    protected $primaryKey = 'resources_id';
+    protected $primaryKey = 'resource_id';
     protected $table = 'unreviewed_resources';
     protected $fillable = [
-        'resources_id',
+        'resource_id',
     ];
 
     public function resource()
     {
-        return $this->hasOne('App\Model\Resources\Resource', 'resource_id', 'resources_id');
+        return $this->hasOne('App\Model\Resources\Resource', 'resource_id', 'resource_id');
     }
 }
