@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Model\Movies\MoviesBase;
 use App\Model\Resources\{
-    Resource, ResourceTypeDetails
+    Resource, ResourceTypeDetails, UnreviewedResources
 };
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -141,6 +142,9 @@ class ResourceController extends Controller
             }
             $data['type'] = $data['type']->type_id;
             $resource = $this->create($data, $id);
+            $u_resource = new UnreviewedResources();
+            $u_resource->resources_id = $resource->id;
+            $u_resource->save();
 
             if ($res = $resource->save()) {
 
@@ -188,6 +192,7 @@ class ResourceController extends Controller
      * 显示资源接口
      * @param $movie_id
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function showResources($movie_id)
     {
@@ -196,9 +201,19 @@ class ResourceController extends Controller
                 throw new \Exception('电影信息不存在', 400);
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
-            foreach ($resources as $resource) {
-                $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->sharer;
-                $response = file_get_contents($api_url);
+            foreach ($resources as $key => $resource) {
+                if (UnreviewedResources::find($resources[$key]['resource_id'])){
+                    unset($resources->$key);
+                    continue;
+                }
+                $client = new Client(['base_uri' => env('OIDC_SERVER')]);
+                $response = $client->request(
+                    'GET',
+                    "/api/app/users/{$resource->sharer}?" . Builder::queryToken(),
+                    []
+                )
+                    ->getBody()
+                    ->getContents();
                 $user = json_decode($response);
                 $created_at = $resource->created_at;
                 $time = explode(' ', $created_at);
