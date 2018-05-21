@@ -15,11 +15,16 @@ class AdminController extends Controller
     public function addAdmin(Request $request)
     {
         // M4 新增管理员
-
         // 验证权限
-//        $id_token = $request->get('id-token');
-//        print_r($id_token);
-//        die;
+//        $validator = $this->validator($request->all());
+//        if ($validator->fails()) {
+//            return response(['error' => $validator->errors()], 422);
+//        }
+        $uid = $request->get('id-token')->uid;
+        if (DB::table('users_auth')->where('id'.$uid)->get()->toArray()[0]['auth'] != 2) {
+            return response(['error' => '没有权限操作'], 422);
+        };
+        //用email从某个接口获取id
         $id = 1;
         if(DB::table('users_auth')->where('id',$id)->update(['auth'=>1]))
         {
@@ -30,10 +35,16 @@ class AdminController extends Controller
         }
     }
 
-    public function deleteAdmin($id)
+    public function deleteAdmin(Request $request,$id)
     {
         // M5 取消管理员
         //auth 0普通用户 1管理员 2超级管理员
+
+        $uid = $request->get('id-token')->uid;
+        if (DB::table('users_auth')->where('id'.$uid)->get()->toArray()[0]['auth'] != 2) {
+            return response(['error' => '没有权限操作'], 422);
+        };
+
         if(DB::table('users_auth')->where('id',$id)->update(['auth'=>0]))
         {
             return response("取消成功",204);
@@ -45,15 +56,21 @@ class AdminController extends Controller
 
     public function listAdmin(Request $request)
     {
+
         //获取管理员列表
-        //$id_token = $request->get('id-token');
-        $users = DB::table('users_auth')->get()->toArray();
-        foreach ($users as $key => $value) {
-            $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . $users[$key]['id'];
+        //验证权限
+        $uid = $request->get('id-token')->uid;
+        if (DB::table('users_auth')->where('id'.$uid)->get()->toArray()[0]['auth'] != 2) {
+            return response(['error' => '没有权限操作'], 422);
+        };
+        //
+        $users['admins'] = DB::table('users_auth')->get()->toArray();
+        foreach ($users['admins'] as $key => $value) {
+            $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . $users['admins'][$key]['id'];
             $response = file_get_contents($api_url);
             $user = json_decode($response);
-            $users[$key]['name'] = $user->name;
-            unset($users[$key]['auth']);
+            $users['admins'][$key]['name'] = $user->name;
+            unset($users['admins'][$key]['auth']);
         }
         return response($users, 200);
     }
