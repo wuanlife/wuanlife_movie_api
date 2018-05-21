@@ -8,46 +8,53 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     //
-    public function addAdmin()
+    /**
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
+    public function addAdmin(Request $request)
     {
         // M4 新增管理员
-        $id = 1;
 
-        if(DB::table('users_auth')->where('id',$id)->update(array('auth'=>1)))
+        // 验证权限
+//        $id_token = $request->get('id-token');
+//        print_r($id_token);
+//        die;
+        $id = 1;
+        if(DB::table('users_auth')->where('id',$id)->update(['auth'=>1]))
         {
-            return response("新增成功",200);
+            return response("新增成功",204);
         }
         else{
             return response(['error'=>"非法请求"],400);
         }
-
     }
 
     public function deleteAdmin($id)
     {
         // M5 取消管理员
         //auth 0普通用户 1管理员 2超级管理员
-        if(DB::table('users_auth')->where('id',$id)->update(array('auth'=>0)))
+        if(DB::table('users_auth')->where('id',$id)->update(['auth'=>0]))
         {
-            return response("取消成功",200);
+            return response("取消成功",204);
         }
         else{
             return response(['error'=>"非法请求"],400);
         }
     }
 
-    public function listAdmin()
+    public function listAdmin(Request $request)
     {
         //获取管理员列表
-        $r =DB::table('users_auth')->get();
-        $re['admins'] = json_decode(json_encode($r),true);
-//        print_r($re['admins'][0]);
-        foreach ($re['admins'] as $key => $value) {
-            $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/api/app/users/' . $re['admins'][$key]['id'];
+        //$id_token = $request->get('id-token');
+        $users = DB::table('users_auth')->get()->toArray();
+        foreach ($users as $key => $value) {
+            $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . $users[$key]['id'];
             $response = file_get_contents($api_url);
             $user = json_decode($response);
-            $value['name'] = $user->name;
+            $users[$key]['name'] = $user->name;
+            unset($users[$key]['auth']);
         }
-        return response($re, 200);
+        return response($users, 200);
     }
 }
