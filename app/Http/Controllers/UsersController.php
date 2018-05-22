@@ -68,6 +68,15 @@ class UsersController extends Controller
                 throw new \Exception('非法请求，sub_point必须是数字', 400);
             }
 
+            // 如果用户积分不存在，则初始化用户积分到积分表
+            $user = Points::find($id_token->uid);
+            if (!$user) {
+                Points::create([
+                    'user_id' => $id_token->uid,
+                    'points' => 0
+                ]);
+            }
+
             DB::transaction(function () use ($request, $id, $sub_point, $id_token) {
                 $movie_points = Points::find($id_token->uid)->points;
                 if ($movie_points - 4 * $sub_point < 0) {
