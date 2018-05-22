@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Resources;
+namespace App\Models\Resources;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -38,5 +38,10 @@ class Resource extends Model
     public function resourceTypeDetails()
     {
         return $this->hasOne('App\Model\Resources\ResourceTypeDetails', 'type_id', 'resource_id');
+    }
+
+    public function movie()
+    {
+        return $this->belongsTo('App\Models\Movies\MoviesBase', 'resource_id', 'id');
     }
 }

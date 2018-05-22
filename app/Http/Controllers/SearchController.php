@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Movies\{
+use App\Models\Movies\{
     Moviesposter, MoviesRating, MoviesBase
 };
 use Illuminate\Http\Request;
