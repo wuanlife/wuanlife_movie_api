@@ -11,7 +11,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Points\Points;
 use App\Models\Points\PointsOrder;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,19 +78,19 @@ class UsersController extends Controller
                     'user_id' => $id,
                     'points_alert' => -4 * $sub_point,
                 ]);
-                $client = new Client(['base_uri' => env('OIDC_SERVER')]);
-                $res = $client->request(
-                    'PUT',
-                    "/api/app/users/{$id}/point?" . Builder::queryToken(),
+                $response = Builder::requestInnerApi("/api/app/users/{$id}/point", 'PUT',
                     [
-                        'headers' => [
-                            'ID-Token' => $request->header('ID-Token'),
-                            'Access-Token' => $request->header('Access-Token'),
-                        ],
-                        'json' => [
-                            'sub_point' => $sub_point,
-                        ]
-                    ]);
+                        'ID-Token' => $request->header('ID-Token'),
+                        'Access-Token' => $request->header('Access-Token'),
+                    ],
+                    [
+                        'sub_point' => $sub_point,
+                    ]
+                );
+                if ($response['status_code'] != 204) {
+                    throw new \Exception('兑换积分失败');
+                }
+
             });
 
             return response([], 204);
@@ -109,19 +108,11 @@ class UsersController extends Controller
      */
     public function getWuanPoint($id, Request $request)
     {
-        $client = new Client(['base_uri' => env('OIDC_SERVER')]);
         try {
-            $res = $client->request(
-                'GET',
-                "/api/app/users/{$id}/point?" . Builder::queryToken(),
-                [
-                    'headers' => [
-                        'ID-Token' => $request->header('ID-Token'),
-                        'Access-Token' => $request->header('Access-Token'),
-                    ]
-                ]);
+            $response = Builder::requestInnerApi("/api/app/users/{$id}/point", 'GET'
+            );
 
-            return response(json_decode($res->getBody()->getContents(), true));
+            return response(json_decode($response['contents'], true));
         } catch (GuzzleException $e) {
 
             return response(['error' => '权限验证失败:' . $e->getMessage()], 400);

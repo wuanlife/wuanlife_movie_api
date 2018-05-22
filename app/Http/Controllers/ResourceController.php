@@ -6,7 +6,6 @@ use App\Models\Movies\MoviesBase;
 use App\Models\Resources\{
     Resource, ResourceTypeDetails, UnreviewedResources
 };
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -64,6 +63,8 @@ class ResourceController extends Controller
                         'name' => $request->get('id-token')->uname
                     ]
                 ]);
+            } else {
+                throw new \Exception('未知错误');
             }
         } catch (\Exception $e) {
             return response(['error' => '编辑资源失败：' . $e->getMessage()], 400);
@@ -110,6 +111,8 @@ class ResourceController extends Controller
             }
             if ($resource->delete()) {
                 return response([], 204);
+            } else {
+                throw new \Exception('未知错误');
             }
         } catch (\Exception $e) {
             return response(['error' => '删除资源失败：' . $e->getMessage()], 400);
@@ -143,7 +146,7 @@ class ResourceController extends Controller
             $data['type'] = $data['type']->type_id;
             $resource = $this->create($data, $id);
             $u_resource = new UnreviewedResources();
-            $u_resource->resources_id = $resource->id;
+            $u_resource->resource_id = $resource->id;
             $u_resource->save();
 
             if ($res = $resource->save()) {
@@ -202,19 +205,13 @@ class ResourceController extends Controller
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
             foreach ($resources as $key => $resource) {
-                if (UnreviewedResources::find($resources[$key]['resource_id'])){
+                if (UnreviewedResources::find($resources[$key]['resource_id'])) {
                     unset($resources->$key);
                     continue;
                 }
-                $client = new Client(['base_uri' => env('OIDC_SERVER')]);
-                $response = $client->request(
-                    'GET',
-                    "/api/app/users/{$resource->sharer}?" . Builder::queryToken(),
-                    []
-                )
-                    ->getBody()
-                    ->getContents();
-                $user = json_decode($response);
+                $response = Builder::requestInnerApi("/api/app/users/{$resource->sharer}");
+                $user = json_decode($response['contents']);
+
                 $created_at = $resource->created_at;
                 $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
