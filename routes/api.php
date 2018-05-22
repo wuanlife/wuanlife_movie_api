@@ -57,6 +57,14 @@ Route::group([
     Route::delete('/resources/{id}/background', 'AdminsController@rejectResource');
 });
 
+// Lwy
+// 新增管理员
+Route::post('/admin','AdminController@addAdmin');
+// 取消管理员
+Route::delete('/admin/{id}','AdminController@deleteAdmin');
+// 获取管理列表
+Route::get('/admin','AdminController@listAdmin');
+
 /*****************************************
  * 不需要权限验证的接口
  *****************************************/
