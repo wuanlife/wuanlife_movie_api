@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class UsersAuth extends Model
 {
     public $timestamps = false;
-    protected $primaryKey = ['id', 'auth'];
     protected $table = 'users_auth';
     protected $fillable = [
         'id',
