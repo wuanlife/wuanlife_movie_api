@@ -30,19 +30,8 @@ class AdminsController extends Controller
                 if (!$resource->resource) {
                     continue;
                 }
-                $client = new Client(['base_uri' => env('OIDC_SERVER')]);
-                $response = $client->request(
-                    'GET',
-                    "/api/app/users/{$resource->resource->sharer}?" . Builder::queryToken(),
-                    [
-                        'headers' => [
-                            'ID-Token' => $request->header('ID-Token'),
-                            'Access-Token' => $request->header('Access-Token'),
-                        ]
-                    ])
-                    ->getBody()
-                    ->getContents();
-                $user = json_decode($response);
+                $response = Builder::requestInnerApi("/api/app/users/{$resource->resource->sharer}");
+                $user = json_decode($response['contents']);
                 $created_at = $resource->resource->created_at;
                 $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
@@ -57,7 +46,7 @@ class AdminsController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
-            return response(['error' => '获取待审核资源失败' . $e->getMessage()], 400);
+            return response(['error' => '获取待审核资源失败: ' . $e->getMessage()], 400);
         }
     }
 
