@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Movies\{
-    Moviesposter, MoviesRating, MoviesBase
+    MoviesPoster, MoviesRating, MoviesBase
 };
 use Illuminate\Http\Request;
 
