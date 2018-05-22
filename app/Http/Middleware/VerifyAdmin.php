@@ -31,12 +31,12 @@ class VerifyAdmin
             ->where('users_auth.id', $user_id)
             ->whereIn('identity', [
                 '管理员',
-                '超级管理员',
+                '最高管理员',
             ])
             ->select('users_auth.auth')
             ->count();
         if (!$res) {
-            return response(['error' => '权限不足']);
+            return response(['error' => '权限不足，需要管理员权限'], 403);
         }
 
         return $next($request);
