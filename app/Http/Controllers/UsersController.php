@@ -39,10 +39,10 @@ class UsersController extends Controller
                     'points' => 0
                 ]);
 
-                return response(['id' => $id_token->uid, 'point' => 0,], 200);
+                return response(['id' => $id_token->uid, 'points' => 0,], 200);
             }
 
-            return response(['id' => $user->user_id, 'point' => $user->points], 200);
+            return response(['id' => $user->user_id, 'points' => $user->points], 200);
         } catch (\Exception $exception) {
 
             return response(['error' => $exception->getMessage()], 400);

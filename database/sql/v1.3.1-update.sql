@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS points
 (
   user_id INT UNSIGNED NOT NULL
   COMMENT '用户id',
-  scores  INT UNSIGNED NOT NULL
+  points  INT UNSIGNED NOT NULL
   COMMENT '午安影视积分',
   PRIMARY KEY (user_id)
 )
