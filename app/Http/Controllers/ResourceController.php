@@ -205,7 +205,7 @@ class ResourceController extends Controller
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
             foreach ($resources as $key => $resource) {
-                if (UnreviewedResources::find($resources[$key]['resource_id'])) {
+                if (UnreviewedResources::find($resource['resource_id'])) {
                     unset($resources->$key);
                     continue;
                 }
