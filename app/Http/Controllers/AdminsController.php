@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Points\Points;
 use App\Models\Resources\Resource;
 use App\Models\Resources\UnreviewedResources;
+use App\Models\Users\UsersAuth;
+use App\Models\Users\UsersAuthDetail;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 
 class AdminsController extends Controller
@@ -58,7 +61,6 @@ class AdminsController extends Controller
         }
     }
 
-
     /**
      * 审核资源
      * @param Request $request
@@ -95,5 +97,95 @@ class AdminsController extends Controller
             DB::rollBack();
             return response(['error' => '审核失败' . $e->getMessage()], 400);
         }
+    }
+
+    /**
+     * 增加管理员
+     * @param Request $request
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function addAdmin(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email'
+        ]);
+        if ($validator->fails()) {
+            return response(['error' => $validator->errors()->first()], 422);
+        }
+
+        $email = $request->input('email');
+
+        // 使用 email 获取用户 id
+        $response = Builder::requestInnerApi("/api/app/users/email/{$email}");
+        $id = json_decode($response['contents'])->id;
+        $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
+
+        // 验证该用户是否已是管理员
+        $user = new UsersAuth();
+        if ($user->where([
+            'id' => $id,
+        ])->first()
+        ) {
+            return response(['error' => '该用户已是管理员或最高管理员'], 400);
+        }
+
+        // 添加管理员
+        $user->id = $id;
+        $user->auth = $auth;
+        $res = $user->save();
+
+        $response = Builder::requestInnerApi("/api/app/users/{$id}");
+        $user_info = json_decode($response['contents']);
+        if ($res) {
+            return response([
+                'id' => $user_info->id,
+                'name' => $user_info->name,
+                'avatar_url' => $user_info->avatar_url,
+            ], 200);
+        } else {
+            return response(['error' => '添加失败'], 400);
+        }
+    }
+
+    /**
+     * 删除管理员
+     * @param $id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
+    public function deleteAdmin($id)
+    {
+        $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
+
+        $res = UsersAuth::where([
+            'id' => $id,
+            'auth' => $auth,
+        ])->delete();
+        if ($res) {
+            return response([], 204);
+        } else {
+            return response(['error' => "非法请求"], 400);
+        }
+    }
+
+    /**
+     * 获取管理员列表
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function listAdmin()
+    {
+        $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
+
+        $users['admins'] = UsersAuth::where('auth',$auth)->get();
+        foreach ($users['admins'] as $key => $value) {
+            $id = $value->id;
+            $response = Builder::requestInnerApi("/api/app/users/{$id}");
+            $user_info = json_decode($response['contents']);
+            $users['admins'][$key]['name'] = $user_info->name;
+            unset($users['admins'][$key]['auth']);
+        }
+
+        return response($users, 200);
     }
 }
