@@ -59,7 +59,7 @@ Route::group([
     // M1 获取资源审核列表
     Route::get('/resources/background', 'AdminsController@getUnreviewedResources');
     // M2 审核资源
-    Route::put('/resources/{id}/background', 'AdminsController@auditResource')->where('id', '[0-9]+');
+    Route::post('/resources/{id}/background', 'AdminsController@auditResource')->where('id', '[0-9]+');
     // M3 删除资源
     Route::delete('/resources/{id}/background', 'AdminsController@rejectResource')->where('id', '[0-9]+');
 
