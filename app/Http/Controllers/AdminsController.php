@@ -7,7 +7,6 @@ use App\Models\Resources\Resource;
 use App\Models\Resources\UnreviewedResources;
 use App\Models\Users\UsersAuth;
 use App\Models\Users\UsersAuthDetail;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -46,7 +45,7 @@ class AdminsController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
-            return response(['error' => '获取待审核资源失败: ' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to get unreviewed resource:  ' . $e->getMessage()], 400);
         }
     }
 
@@ -59,32 +58,53 @@ class AdminsController extends Controller
     public function auditResource(Request $request, $resource_id)
     {
         $type = $request->input('action');
-        $result = UnreviewedResources::where('resource_id', $resource_id)->first();
-        if (!$result) {
-            return response(['error' => '资源不存在'], 400);
+        $unrev_result = UnreviewedResources::where('resource_id', $resource_id)->first();
+        if (!$unrev_result) {
+            return response(['error' => 'The resource not found'], 400);
         }
         DB::beginTransaction();
         try {
             switch ($type) {
-                case 'good':
+                case 'award':
                     $user_id = Resource::where('resource_id', $resource_id)->first()->sharer;
                     Points::find($user_id)->increment('points', 1);
                     break;
                 case 'pass':
                     break;
-                case 'delete':
-                    Resource::where('resource_id', $resource_id)->delete();
-                    break;
                 default:
-                    throw new \Exception('错误的请求类型');
+                    throw new \Exception('Wrong enum type');
             }
-            $result->delete();
+            $unrev_result->delete();
             DB::commit();
 
-            return response('操作成功', 204);
+            return response([], 204);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response(['error' => '审核失败' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to audit: ' . $e->getMessage()], 400);
+        }
+    }
+
+    /**
+     * 删除资源
+     * @param $resource_id
+     * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     */
+    public function rejectResource($resource_id)
+    {
+        $unrev_result = UnreviewedResources::where('resource_id', $resource_id)->first();
+        if (!$unrev_result) {
+            return response(['error' => 'The resource not found'], 400);
+        }
+        DB::beginTransaction();
+        try {
+            Resource::where('resource_id', $resource_id)->delete();
+            $unrev_result->delete();
+            DB::commit();
+
+            return response([], 204);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response(['error' => 'Failed to delete: '], 400);
         }
     }
 
@@ -116,7 +136,7 @@ class AdminsController extends Controller
             'id' => $id,
         ])->first()
         ) {
-            return response(['error' => '该用户已是管理员或最高管理员'], 400);
+            return response(['error' => 'The user is already an admin or top admin'], 400);
         }
 
         // 添加管理员
@@ -133,7 +153,7 @@ class AdminsController extends Controller
                 'avatar_url' => $user_info->avatar_url,
             ], 200);
         } else {
-            return response(['error' => '添加失败'], 400);
+            return response(['error' => 'Failed to add admin'], 400);
         }
     }
 
@@ -150,10 +170,11 @@ class AdminsController extends Controller
             'id' => $id,
             'auth' => $auth,
         ])->delete();
+
         if ($res) {
             return response([], 204);
         } else {
-            return response(['error' => "非法请求"], 400);
+            return response(['error' => 'Illegal request'], 400);
         }
     }
 
@@ -164,17 +185,21 @@ class AdminsController extends Controller
      */
     public function listAdmin()
     {
-        $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
+        try {
+            $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
 
-        $users['admins'] = UsersAuth::where('auth',$auth)->get();
-        foreach ($users['admins'] as $key => $value) {
-            $id = $value->id;
-            $response = Builder::requestInnerApi("/api/app/users/{$id}");
-            $user_info = json_decode($response['contents']);
-            $users['admins'][$key]['name'] = $user_info->name;
-            unset($users['admins'][$key]['auth']);
+            $users['admins'] = UsersAuth::where('auth', $auth)->get();
+            foreach ($users['admins'] as $key => $value) {
+                $id = $value->id;
+                $response = Builder::requestInnerApi("/api/app/users/{$id}");
+                $user_info = json_decode($response['contents']);
+                $users['admins'][$key]['name'] = $user_info->name;
+                unset($users['admins'][$key]['auth']);
+            }
+
+            return response($users, 200);
+        } catch (\Exception $e) {
+            return response(['error' => 'Failed to get admins list'], 400);
         }
-
-        return response($users, 200);
     }
 }
