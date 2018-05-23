@@ -28,7 +28,7 @@ class ResourceController extends Controller
             }
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie info does not exist'], 404);
             };
             $data = $request->all();
             $resource = Resource::where([
@@ -37,11 +37,11 @@ class ResourceController extends Controller
                 'sharer' => $request->get('id-token')->uid
             ]);
             if (!$resource->get()->count()) {
-                throw new \Exception('非法请求');
+                return response(['error' => 'Illegal request'], 400);
             }
             $type = ResourceTypeDetails::where('type_name', $data['type'])->first();
             if (!$type) {
-                throw new \Exception('错误的资源类型', 422);
+                return response(['error' => 'Wrong type of resource'], 422);
             }
             $type_id = $type->type_id;
             if ($resource->update([
@@ -64,10 +64,10 @@ class ResourceController extends Controller
                     ]
                 ]);
             } else {
-                throw new \Exception('未知错误');
+                return response(['error' => 'Unknown mistake'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '编辑资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to edit resource: ' . $e->getMessage()], 400);
         }
     }
 
@@ -97,7 +97,7 @@ class ResourceController extends Controller
         try {
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie info does not exist'], 404);
             };
 
             $resource = Resource::where(
@@ -107,15 +107,15 @@ class ResourceController extends Controller
                     'sharer' => $request->get('id-token')->uid
                 ]);
             if (!$resource->get()->count()) {
-                throw new \Exception('非法请求');
+                return response(['error' => 'Illegal request'], 400);
             }
             if ($resource->delete()) {
                 return response([], 204);
             } else {
-                throw new \Exception('未知错误');
+                return response(['error' => 'Unknown mistake'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '删除资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to delete resource: ' . $e->getMessage()], 400);
         }
     }
 
@@ -135,13 +135,13 @@ class ResourceController extends Controller
             }
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie info does not exist'], 404);
             };
             $data = $request->all();
             $type_cn = $data['type'];
             $data['type'] = ResourceTypeDetails::where('type_name', $data['type'])->first();
             if (!$data['type']) {
-                throw new \Exception('错误的资源类型', 422);
+                return response(['error' => 'Wrong type of resource'], 422);
             }
             $data['type'] = $data['type']->type_id;
             $resource = $this->create($data, $id);
@@ -164,10 +164,10 @@ class ResourceController extends Controller
                     ]
                 ]);
             } else {
-                throw new \Exception('未知错误', 400);
+                return response(['error' => 'Unknown mistake'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '添加资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to add resource: ' . $e->getMessage()], 400);
         }
 
     }
@@ -201,7 +201,7 @@ class ResourceController extends Controller
     {
         try {
             if (!MoviesBase::find($movie_id)) {
-                throw new \Exception('电影信息不存在', 400);
+                return response(['error' => 'Movie info does not exist'], 404);
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
             foreach ($resources as $key => $resource) {
@@ -230,7 +230,7 @@ class ResourceController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
-            return response(['error' => '获取资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to get resources: ' . $e->getMessage()], 400);
         }
     }
 }

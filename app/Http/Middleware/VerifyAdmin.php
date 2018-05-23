@@ -20,11 +20,7 @@ class VerifyAdmin
     {
         try {
             $id_token = $request->header('ID-Token');
-            $id_token = json_decode(
-                base64_decode(
-                    explode('.', $id_token)[1]
-                )
-            );
+            $id_token = json_decode(base64_decode(explode('.', $id_token)[1]));
             $user_id = $id_token->uid;
 
             $res = DB::table('users_auth')
@@ -36,11 +32,11 @@ class VerifyAdmin
                 ])
                 ->select('users_auth.auth')
                 ->count();
+
             if (!$res) {
-                return response(['error' => '权限不足，需要管理员权限'], 403);
+                return response(['error' => 'Insufficient permissions,need administrator rights'], 403);
             }
         } catch (\Exception $e) {
-
             return response(['error' => $e->getMessage()], 400);
         }
         return $next($request);

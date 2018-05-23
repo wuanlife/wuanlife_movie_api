@@ -29,7 +29,7 @@ class SearchController extends Controller
 
             return response($data, 200);
         } else {
-            return response(['error' => "q为空"], 400);
+            return response(['error' => 'Param \'q\' is empty'], 400);
         }
     }
 }

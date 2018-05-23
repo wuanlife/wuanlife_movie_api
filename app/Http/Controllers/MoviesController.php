@@ -62,6 +62,7 @@ class MoviesController extends Controller
                 ->get();
             $base['movies'] = json_decode($base['movies'], true);
             $base['total'] = MoviesBase::count();
+
             return response($base, 200);
         }
     }
@@ -76,7 +77,7 @@ class MoviesController extends Controller
         try {
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie already exists'], 400);
             };
 
             // 获取影片详细信息影片信息
@@ -115,7 +116,7 @@ class MoviesController extends Controller
                 'url_douban' => $movie->url_douban,
             ], 200);
         } catch (\Exception $e) {
-            return \response(['error' => '获取影片信息失败:' . $e->getMessage()], 400);
+            return \response(['error' => 'Failed to get movie info:' . $e->getMessage()], 400);
         }
     }
 
@@ -128,7 +129,7 @@ class MoviesController extends Controller
     {
         try {
             if (!$type = $request->input('type')) {
-                throw new \Exception('缺少必要参数：type');
+                return response(['error' => 'Missing requested param: type'], 422);
             }
             $url = $request->input('url');
 
@@ -209,20 +210,20 @@ class MoviesController extends Controller
                 $directors->director_id = $director->id;
                 $directors->save();
             }
-
             DB::commit();
+
             return response(["id" => $info->id]);
         } catch (\Exception $e) {
             DB::rollBack();
             switch ($e->getCode()) {
                 case 1:
                     return response([
-                        'error' => '添加失败，资源已存在',
+                        'error' => 'Failed to add,resource already exists',
                         'id' => $e->getMessage(),
                     ], 400);
                 default:
                     return response([
-                        'error' => '添加失败，' . (string)$e->getMessage()
+                        'error' => 'Failed to add: ' . (string)$e->getMessage()
                     ], 400);
             }
         }
@@ -241,7 +242,7 @@ class MoviesController extends Controller
         $pattern = "$.+\/subject\/([0-9]+).?$";
         preg_match($pattern, $url, $res);
         if (count($res) < 2) {
-            throw new \Exception('错误的url');
+            throw new \Exception('Wrong url');
         }
         $id = $res[1];
 
@@ -266,7 +267,7 @@ class MoviesController extends Controller
     {
         //获取豆瓣 api 返回的 Json
         if (!$info_json = file_get_contents($url)) {
-            throw new \Exception('影片信息不存在');
+            return response(['error' => 'Movie info does not exists'],404);
         }
         return json_decode($info_json);
     }

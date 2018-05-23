@@ -34,7 +34,7 @@ class VerifyTopAdmin
             ->select('users_auth.auth')
             ->count();
         if (!$res) {
-            return response(['error' => '权限不足，需要最高管理员权限'], 403);
+            return response(['error' => 'Insufficient permissions,need top administrator rights:'], 403);
         }
 
         return $next($request);
