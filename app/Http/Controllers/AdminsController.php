@@ -116,44 +116,48 @@ class AdminsController extends Controller
      */
     public function addAdmin(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email'
-        ]);
-        if ($validator->fails()) {
-            return response(['error' => $validator->errors()->first()], 422);
-        }
+        try {
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email'
+            ]);
+            if ($validator->fails()) {
+                return response(['error' => $validator->errors()->first()], 422);
+            }
 
-        $email = $request->input('email');
+            $email = $request->input('email');
 
-        // 使用 email 获取用户 id
-        $response = Builder::requestInnerApi("/api/app/users/email/{$email}");
-        $id = json_decode($response['contents'])->id;
-        $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
+            // 使用 email 获取用户 id
+            $response = Builder::requestInnerApi("/api/app/users/email/{$email}");
+            $id = json_decode($response['contents'])->id;
+            $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
 
-        // 验证该用户是否已是管理员
-        $user = new UsersAuth();
-        if ($user->where([
-            'id' => $id,
-        ])->first()
-        ) {
-            return response(['error' => 'The user is already an admin or top admin'], 400);
-        }
+            // 验证该用户是否已是管理员
+            $user = new UsersAuth();
+            if ($user->where([
+                'id' => $id,
+            ])->first()
+            ) {
+                return response(['error' => 'The user is already an admin or top admin'], 400);
+            }
 
-        // 添加管理员
-        $user->id = $id;
-        $user->auth = $auth;
-        $res = $user->save();
+            // 添加管理员
+            $user->id = $id;
+            $user->auth = $auth;
+            $res = $user->save();
 
-        $response = Builder::requestInnerApi("/api/app/users/{$id}");
-        $user_info = json_decode($response['contents']);
-        if ($res) {
-            return response([
-                'id' => $user_info->id,
-                'name' => $user_info->name,
-                'avatar_url' => $user_info->avatar_url,
-            ], 200);
-        } else {
-            return response(['error' => 'Failed to add admin'], 400);
+            $response = Builder::requestInnerApi("/api/app/users/{$id}");
+            $user_info = json_decode($response['contents']);
+            if ($res) {
+                return response([
+                    'id' => $user_info->id,
+                    'name' => $user_info->name,
+                    'avatar_url' => $user_info->avatar_url,
+                ], 200);
+            } else {
+                return response(['error' => 'Failed to add admin'], 400);
+            }
+        } catch (\Exception $e) {
+            return response(['error' => 'Failed to add admin: ' . $e->getMessage()], 400);
         }
     }
 
