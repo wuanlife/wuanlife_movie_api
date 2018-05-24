@@ -64,7 +64,7 @@ class UsersController extends Controller
                 return response(['error' => 'Illegal request,user id do not match token'], 403);
             }
             if (!is_numeric($sub_point)) {
-                return response(['error' => 'Illegal request,sub_point must be a number'], 422);
+                return response(['error' => 'Illegal request,sub_point must be a integer number'], 422);
             }
 
             // 如果用户积分不存在，则初始化用户积分到积分表
