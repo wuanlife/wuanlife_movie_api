@@ -63,7 +63,7 @@ class UsersController extends Controller
             if ($id != $id_token->uid) {
                 return response(['error' => 'Illegal request,user id do not match token'], 403);
             }
-            if (!is_numeric($sub_point)) {
+            if (!is_numeric($sub_point) || ($sub_point < 0) || (floor($sub_point) != $sub_point)) {
                 return response(['error' => 'Illegal request,sub_point must be a integer number'], 422);
             }
 
