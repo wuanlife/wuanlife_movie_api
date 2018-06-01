@@ -62,5 +62,6 @@ class Kernel extends HttpKernel
         'logged' => \App\Http\Middleware\VerifyToken::class,
         'admin' => \App\Http\Middleware\VerifyAdmin::class,
         'top_admin' => \App\Http\Middleware\VerifyTopAdmin::class,
+        'requester_auth' =>\App\Http\Middleware\ApiAuthVerifier::class,
     ];
 }

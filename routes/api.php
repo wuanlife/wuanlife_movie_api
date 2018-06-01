@@ -38,13 +38,6 @@ Route::group([
         'rid' => '[0-9]+'
     ]);
 
-    // S1 获取午安账号积分接口
-    Route::get('/users/{id}/wuan_point', 'UsersController@getWuanPoint')->where('id', '[0-9]+');
-    // S2 获取午安影视积分接口
-    Route::get('/users/{id}/movie_point', 'UsersController@getMoviePoint')->where('id', '[0-9]+');
-    // S3 兑换午安账号积分接口
-    Route::put('/users/{id}/point', 'UsersController@redeemWuanPoint')->where('id', '[0-9]+');
-
 });
 
 /*****************************************
@@ -83,6 +76,20 @@ Route::group([
 });
 
 /*****************************************
+ * 内部通信接口
+ *****************************************/
+Route::group([
+    'middleware' => [
+        'requester_auth'
+    ],
+], function () {
+    // 获取影视积分接口
+    Route::get('/app/users/{id}/points', 'InteriorCommunication@getPoints')->where('id', '[0-9]+');
+    // 修改影视积分接口
+    Route::put('/app/users/{id}/points', 'InteriorCommunication@putPoints')->where('id', '[0-9]+');
+});
+
+/*****************************************
  * 不需要权限验证的接口
  *****************************************/
 Route::group([
@@ -104,3 +111,4 @@ Route::group([
 
 
 });
+
