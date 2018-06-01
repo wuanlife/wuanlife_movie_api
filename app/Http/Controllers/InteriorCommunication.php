@@ -44,6 +44,9 @@ class InteriorCommunication extends Controller
                     $user->increment('points', $sub_points);
                     break;
                 case 'decrement':
+                    if ($points < $sub_points) {
+                        return response(['error' => 'Lock points']);
+                    }
                     $user->decrement('points', $sub_points);
                     break;
                 default:
