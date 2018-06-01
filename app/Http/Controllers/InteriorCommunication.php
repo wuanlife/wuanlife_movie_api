@@ -35,9 +35,7 @@ class InteriorCommunication extends Controller
                 ]);
             }
             $points = $user->points;
-            if (!$points) {
-                return response(['error' => 'User does not exists.'], 404);
-            }
+
             if ($sub_points < 0 && $sub_points > $points) {
                 return response(['error' => 'Lack of points'], 400);
             }
