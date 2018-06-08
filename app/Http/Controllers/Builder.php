@@ -34,9 +34,10 @@ class Builder extends Controller
 
     /**
      * 构造内部请求时验证所需的信息
+     * @param array $param
      * @return array
      */
-    private static function getParam()
+    public static function getParam($param = [])
     {
         $app = env('APP_NAME');
         $secret = env('SECRET');
@@ -48,10 +49,12 @@ class Builder extends Controller
         );
         $key = Hash::make($info . $secret);
 
-        return [
+        $info = [
             'app' => $app,
             'info' => $info,
             'key' => $key,
         ];
+
+        return array_merge($info,$param);
     }
 }
