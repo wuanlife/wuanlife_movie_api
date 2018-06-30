@@ -1,0 +1,1 @@
+INSERT INTO auth_detail VALUES (1,'管理员'),(2,'最高管理员');

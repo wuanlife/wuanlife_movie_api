@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Model\Movies\MoviesBase;
-use App\Model\Resources\{
-    Resource, ResourceTypeDetails
+use App\Models\Movies\MoviesBase;
+use App\Models\Resources\{
+    Resource, ResourceTypeDetails, UnreviewedResources
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +28,7 @@ class ResourceController extends Controller
             }
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie info does not exist'], 404);
             };
             $data = $request->all();
             $resource = Resource::where([
@@ -37,11 +37,11 @@ class ResourceController extends Controller
                 'sharer' => $request->get('id-token')->uid
             ]);
             if (!$resource->get()->count()) {
-                throw new \Exception('非法请求');
+                return response(['error' => 'Illegal request'], 400);
             }
             $type = ResourceTypeDetails::where('type_name', $data['type'])->first();
             if (!$type) {
-                throw new \Exception('错误的资源类型', 422);
+                return response(['error' => 'Wrong type of resource'], 422);
             }
             $type_id = $type->type_id;
             if ($resource->update([
@@ -63,9 +63,11 @@ class ResourceController extends Controller
                         'name' => $request->get('id-token')->uname
                     ]
                 ]);
+            } else {
+                return response(['error' => 'Unknown mistake'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '编辑资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to edit resource: ' . $e->getMessage()], 400);
         }
     }
 
@@ -95,7 +97,7 @@ class ResourceController extends Controller
         try {
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie info does not exist'], 404);
             };
 
             $resource = Resource::where(
@@ -105,13 +107,15 @@ class ResourceController extends Controller
                     'sharer' => $request->get('id-token')->uid
                 ]);
             if (!$resource->get()->count()) {
-                throw new \Exception('非法请求');
+                return response(['error' => 'Illegal request'], 400);
             }
             if ($resource->delete()) {
                 return response([], 204);
+            } else {
+                return response(['error' => 'Unknown mistake'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '删除资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to delete resource: ' . $e->getMessage()], 400);
         }
     }
 
@@ -131,16 +135,19 @@ class ResourceController extends Controller
             }
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                throw new \Exception('影片信息不存在');
+                return response(['error' => 'Movie info does not exist'], 404);
             };
             $data = $request->all();
             $type_cn = $data['type'];
             $data['type'] = ResourceTypeDetails::where('type_name', $data['type'])->first();
             if (!$data['type']) {
-                throw new \Exception('错误的资源类型', 422);
+                return response(['error' => 'Wrong type of resource'], 422);
             }
             $data['type'] = $data['type']->type_id;
             $resource = $this->create($data, $id);
+            $u_resource = new UnreviewedResources();
+            $u_resource->resource_id = $resource->id;
+            $u_resource->save();
 
             if ($res = $resource->save()) {
 
@@ -157,10 +164,10 @@ class ResourceController extends Controller
                     ]
                 ]);
             } else {
-                throw new \Exception('未知错误', 400);
+                return response(['error' => 'Unknown mistake'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => '添加资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to add resource: ' . $e->getMessage()], 400);
         }
 
     }
@@ -188,18 +195,23 @@ class ResourceController extends Controller
      * 显示资源接口
      * @param $movie_id
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function showResources($movie_id)
     {
         try {
             if (!MoviesBase::find($movie_id)) {
-                throw new \Exception('电影信息不存在', 400);
+                return response(['error' => 'Movie info does not exist'], 404);
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
-            foreach ($resources as $resource) {
-                $api_url = env('OIDC_SERVER_GET_USER_INFO_API') . '/' . $resource->sharer;
-                $response = file_get_contents($api_url);
-                $user = json_decode($response);
+            foreach ($resources as $key => $resource) {
+                if (UnreviewedResources::find($resource['resource_id'])) {
+                    unset($resources->$key);
+                    continue;
+                }
+                $response = Builder::requestInnerApi("/api/app/users/{$resource->sharer}");
+                $user = json_decode($response['contents']);
+
                 $created_at = $resource->created_at;
                 $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
@@ -218,7 +230,7 @@ class ResourceController extends Controller
             }
             return response(['resources' => $res ?? []], 200);
         } catch (\Exception $e) {
-            return response(['error' => '获取资源失败：' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to get resources: ' . $e->getMessage()], 400);
         }
     }
 }

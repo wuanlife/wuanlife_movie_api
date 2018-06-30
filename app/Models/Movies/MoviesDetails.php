@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Movies;
+namespace App\Models\Movies;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,11 +11,11 @@ class MoviesDetails extends Model
     protected $primaryKey = 'id';
 
     public function rating(){
-        return $this->hasOne('App\Model\Movies\MoviesRating','id','id');
+        return $this->hasOne('App\Models\Movies\MoviesRating','id','id');
     }
 
     public function summary(){
-        return $this->hasOne('App\Model\Movies\MoviesSummary','id','id');
+        return $this->hasOne('App\Models\Movies\MoviesSummary','id','id');
     }
 
 }

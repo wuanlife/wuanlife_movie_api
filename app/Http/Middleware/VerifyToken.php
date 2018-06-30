@@ -17,10 +17,10 @@ class VerifyToken
     {
         try {
             if (!($id_token = $request->header('ID-Token'))) {
-                throw new \Exception('缺少ID-Token');
+                return response(['error' => '缺少ID-Token'], 401);
             }
             if (!($access_token = $request->header('Access-Token'))) {
-                throw new \Exception('缺少Access-Token');
+                return response(['error' => '缺少Access-Token'], 401);
             }
 
             $client = new Client(['base_uri' => env('OIDC_SERVER')]);
@@ -33,15 +33,13 @@ class VerifyToken
                         'Access-Token' => $access_token,
                     ]
                 ]);
+
+            $id_token = json_decode(base64_decode(explode('.', $id_token)[1]));
+            $request->attributes->add(['id-token' => $id_token]);
+
+            return $next($request);
         } catch (\Exception $e) {
-            return response(['error' => '权限验证失败:' . $e->getMessage()], 400);
+            return response(['error' => 'Permission verification failed: ' . $e->getMessage()], 400);
         }
-        $id_token = json_decode(
-            base64_decode(
-                explode('.', $id_token)[1]
-            )
-        );
-        $request->attributes->add(['id-token' => $id_token]);
-        return $next($request);
     }
 }
