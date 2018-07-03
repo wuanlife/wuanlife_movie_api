@@ -32,7 +32,7 @@ class MoviesController extends Controller
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
                 ->join(
                     DB::raw(
-                        '(select * FROM wuan_movies.resources ORDER BY created_at DESC) resources'),
+                        '(select * FROM resources ORDER BY created_at DESC) resources'),
                     'resources.movies_id',
                     'movies_base.id')
                 ->where('type_id', $type)
