@@ -30,11 +30,15 @@ class MoviesController extends Controller
                 ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
                 ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-                ->join('resources', 'resources.movies_id', 'movies_base.id', 'left')
+                ->join(
+                    DB::raw(
+                        '(select * FROM wuan_movies.resources ORDER BY created_at DESC) resources'),
+                    'resources.movies_id',
+                    'movies_base.id')
                 ->where('type_id', $type)
                 ->skip($offset)
                 ->take($limit)
-                ->orderBy('resources.created_at', 'desc')
+                ->groupBy('movies_base.id')
                 ->orderBy('movies_base.created_at', 'desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_type.type_id', 'movies_rating.rating')
@@ -52,15 +56,18 @@ class MoviesController extends Controller
             $base['movies'] = DB::table('movies_base')
                 ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
                 ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-                ->join('resources', 'resources.movies_id', 'movies_base.id', 'left')
+                ->join(
+                    DB::raw(
+                        '(select * FROM wuan_movies.resources ORDER BY created_at DESC) resources'),
+                    'resources.movies_id',
+                    'movies_base.id')
                 ->skip($offset)
                 ->take($limit)
-                ->orderBy('resources.created_at', 'desc')
+                ->groupBy('movies_base.id')
                 ->orderBy('movies_base.created_at', 'desc')
                 ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
                     'movies_rating.rating')
                 ->get();
-            $base['movies'] = json_decode($base['movies'], true);
             $base['total'] = MoviesBase::count();
 
             return response($base, 200);
@@ -267,7 +274,7 @@ class MoviesController extends Controller
     {
         //获取豆瓣 api 返回的 Json
         if (!$info_json = file_get_contents($url)) {
-            return response(['error' => 'Movie info does not exists'],404);
+            return response(['error' => 'Movie info does not exists'], 404);
         }
         return json_decode($info_json);
     }
