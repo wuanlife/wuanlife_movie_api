@@ -15,6 +15,6 @@ class UsersAuth extends Model
 
     public function detail()
     {
-        return $this->belongsTo('App\Models\Users\UsersAuthDetail', 'id', 'auth');
+        return $this->belongsTo('App\Models\Users\UsersAuthDetail', 'auth', 'id');
     }
 }
