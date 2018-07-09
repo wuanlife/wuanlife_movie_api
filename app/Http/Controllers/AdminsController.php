@@ -40,7 +40,7 @@ class AdminsController extends Controller
                     'name' => $resource->resource->title,
                     'instruction' => $resource->resource->instruction,
                     'sharer' => $user->name,
-                    'create_at' => $created_at,
+                    'created_at' => $created_at,
                 ];
             }
             return response(['resources' => $res ?? []], 200);
@@ -190,18 +190,22 @@ class AdminsController extends Controller
     public function listAdmin()
     {
         try {
-            $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
-
-            $users['admins'] = UsersAuth::where('auth', $auth)->get();
-            foreach ($users['admins'] as $key => $value) {
-                $id = $value->id;
-                $response = Builder::requestInnerApi("/api/app/users/{$id}");
+            $users = UsersAuth::with(['detail' => function($query) {
+                $query->where('identity', '管理员');
+            }])->get();
+            $res = [];
+            foreach ($users as $user) {
+                if (!$user->detail) {
+                    continue;
+                }
+                $response = Builder::requestInnerApi("/api/app/users/{$user->id}");
                 $user_info = json_decode($response['contents']);
-                $users['admins'][$key]['name'] = $user_info->name;
-                unset($users['admins'][$key]['auth']);
+                $res[] = [
+                    'id' => $user->id,
+                    'name' => $user_info->name,
+                ];
             }
-
-            return response($users, 200);
+            return response(['admins' => $res ?? []], 200);
         } catch (\Exception $e) {
             return response(['error' => 'Failed to get admins list'], 400);
         }

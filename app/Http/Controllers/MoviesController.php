@@ -13,65 +13,47 @@ use Illuminate\Support\Facades\DB;
 
 class MoviesController extends Controller
 {
-
     /**
-     * 首页文章接口
+     * 首页/影片分类页接口
+     * @param Request $request
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      */
-    public function home()
+    public function home(Request $request)
     {
         //主页 limit offset type三个参数
-        $limit = $_GET['limit'] ?? 20;
-        $offset = $_GET['offset'] ?? 0;
-        if (!empty($_GET['type'])) {
+        $limit = $request->input('limit') ?? 20;
+        $offset = $request->input('offset') ?? 0;
+        $where = [];
+        if (!empty($request->input('type'))) {
             //type 参数也存在
-            $type = $_GET['type'];
-            $base['movies'] = DB::table('movies_base')
-                ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
-                ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
-                ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-                ->join(
-                    DB::raw(
-                        '(select * FROM resources ORDER BY created_at DESC) resources'),
-                    'resources.movies_id',
-                    'movies_base.id')
-                ->where('type_id', $type)
-                ->skip($offset)
-                ->take($limit)
-                ->groupBy('movies_base.id')
-                ->orderBy('movies_base.created_at', 'desc')
-                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
-                    'movies_type.type_id', 'movies_rating.rating')
-                ->get();
-            $base['movies'] = json_decode($base['movies'], true);
-            $base['total'] = DB::table('movies_base')
-                ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
-                ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
-                ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-                ->where('type_id', $type)
-                ->count();
-            return response($base, 200);
-        } else {
-            //type参数不存在
-            $base['movies'] = DB::table('movies_base')
-                ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
-                ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-                ->join(
-                    DB::raw(
-                        '(select * FROM resources ORDER BY created_at DESC) resources'),
-                    'resources.movies_id',
-                    'movies_base.id')
-                ->skip($offset)
-                ->take($limit)
-                ->groupBy('movies_base.id')
-                ->orderBy('movies_base.created_at', 'desc')
-                ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
-                    'movies_rating.rating')
-                ->get();
-            $base['total'] = MoviesBase::count();
-
-            return response($base, 200);
+            $type = $request->input('type');
+            $where['type_id'] = $type;
         }
+
+        $movies = DB::table('movies_base')
+            ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
+            ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+            ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
+            ->leftJoin( DB::raw('(SELECT movies_id, max( created_at ) AS new_resources_created_at FROM resources GROUP BY movies_id ) resources'), 'resources.movies_id', 'movies_base.id')
+            ->where($where)
+            ->orderBy('new_resources_created_at', 'desc')
+            ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster', 'movies_rating.rating')
+            ->paginate($limit, ['*'], '', $offset);
+        $res = [];
+        foreach ($movies as $movie) {
+            $res[] = [
+                'id' => $movie['id'],
+                'title' => $movie['title'],
+                'digest' => $movie['digest'],
+                'poster' => $movie['poster'],
+                'rating' => $movie['rating']
+            ];
+        }
+
+        $base['movies'] = $res;
+        $base['total'] = $movies->total();
+
+        return response($base, 200);
     }
 
     /**
