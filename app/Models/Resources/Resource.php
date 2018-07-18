@@ -42,6 +42,6 @@ class Resource extends Model
 
     public function movie()
     {
-        return $this->belongsTo('App\Models\Movies\MoviesBase', 'resource_id', 'id');
+        return $this->belongsTo('App\Models\Movies\MoviesBase', 'movies_id', 'id');
     }
 }
