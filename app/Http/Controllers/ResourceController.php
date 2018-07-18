@@ -209,7 +209,10 @@ class ResourceController extends Controller
                     unset($resources->$key);
                     continue;
                 }
-                $response = Builder::requestInnerApi("/api/app/users/{$resource->sharer}");
+                $response = Builder::requestInnerApi(
+                    env('OIDC_SERVER'),
+                    "/api/app/users/{$resource->sharer}"
+                );
                 $user = json_decode($response['contents']);
 
                 $created_at = $resource->created_at;

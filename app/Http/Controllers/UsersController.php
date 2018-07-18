@@ -86,7 +86,10 @@ class UsersController extends Controller
                     'user_id' => $id,
                     'points_alert' => -4 * $sub_point,
                 ]);
-                $response = Builder::requestInnerApi("/api/app/users/{$id}/point", 'PUT',
+                $response = Builder::requestInnerApi(
+                    env('OIDC_SERVER'),
+                    "/api/app/users/{$id}/point",
+                    'PUT',
                     [
                         'ID-Token' => $request->header('ID-Token'),
                         'Access-Token' => $request->header('Access-Token'),
@@ -116,7 +119,10 @@ class UsersController extends Controller
     public function getWuanPoint($id)
     {
         try {
-            $response = Builder::requestInnerApi("/api/app/users/{$id}/point", 'GET'
+            $response = Builder::requestInnerApi(
+                env('OIDC_SERVER'),
+                "/api/app/users/{$id}/point",
+                'GET'
             );
 
             return response(json_decode($response['contents'], true));
