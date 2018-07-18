@@ -303,4 +303,4 @@ CREATE TABLE IF NOT EXISTS points_order
   COMMENT '午安影视积分',
   created_at TIMESTAMP,
   PRIMARY KEY (id)
-)
+);
