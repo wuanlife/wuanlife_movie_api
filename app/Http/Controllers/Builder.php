@@ -16,9 +16,9 @@ class Builder extends Controller
      * @return array|\Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public static function requestInnerApi($url, $method = 'GET', $header = [], $param = [])
+    public static function requestInnerApi($base_url, $url, $method = 'GET', $header = [], $param = [])
     {
-        $client = new Client(['base_uri' => env('OIDC_SERVER')]);
+        $client = new Client(['base_uri' => $base_url]);
         $params = array_merge(self::getParam(), $param);
         $response = $client->request($method, $url, [
                 'headers' => $header,
