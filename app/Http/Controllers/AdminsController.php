@@ -29,7 +29,10 @@ class AdminsController extends Controller
                 if (!$resource->resource) {
                     continue;
                 }
-                $response = Builder::requestInnerApi("/api/app/users/{$resource->resource->sharer}");
+                $response = Builder::requestInnerApi(
+                    env('OIDC_SERVER'),
+                    "/api/app/users/{$resource->resource->sharer}"
+                );
                 $user = json_decode($response['contents']);
                 $created_at = $resource->resource->created_at;
                 $time = explode(' ', $created_at);
@@ -127,7 +130,10 @@ class AdminsController extends Controller
             $email = $request->input('email');
 
             // 使用 email 获取用户 id
-            $response = Builder::requestInnerApi("/api/app/users/email/{$email}");
+            $response = Builder::requestInnerApi(
+                env('OIDC_SERVER'),
+                "/api/app/users/email/{$email}"
+            );
             $id = json_decode($response['contents'])->id;
             $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
 
@@ -145,7 +151,10 @@ class AdminsController extends Controller
             $user->auth = $auth;
             $res = $user->save();
 
-            $response = Builder::requestInnerApi("/api/app/users/{$id}");
+            $response = Builder::requestInnerApi(
+                env('OIDC_SERVER'),
+                "/api/app/users/{$id}"
+            );
             $user_info = json_decode($response['contents']);
             if ($res) {
                 return response([
@@ -188,17 +197,21 @@ class AdminsController extends Controller
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function listAdmin()
-    {
-        try {
-            $users = UsersAuth::with(['detail' => function($query) {
-                $query->where('identity', '管理员');
-            }])->get();
+    {    
+    try {
+            $users = UsersAuth::with([
+                'detail' => function ($query) {
+                    $query->where('identity', '管理员');
+                }
+            ])->get();
             $res = [];
             foreach ($users as $user) {
                 if (!$user->detail) {
                     continue;
                 }
-                $response = Builder::requestInnerApi("/api/app/users/{$user->id}");
+                $response = Builder::requestInnerApi(
+                    env('OIDC_SERVER'), "/api/app/users/{$user->id}");
+
                 $user_info = json_decode($response['contents']);
                 $res[] = [
                     'id' => $user->id,
