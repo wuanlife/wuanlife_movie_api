@@ -145,9 +145,9 @@ class ResourceController extends Controller
             }
             $data['type'] = $data['type']->type_id;
             $resource = $this->create($data, $id);
-//            $u_resource = new UnreviewedResources();
-//            $u_resource->resource_id = $resource->id;
-//            $u_resource->save();
+            $u_resource = new UnreviewedResources();
+            $u_resource->resource_id = $resource->id;
+            $u_resource->save();
 
             if ($res = $resource->save()) {
 
