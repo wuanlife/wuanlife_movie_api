@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Points\Points;
 use App\Models\Resources\Resource;
+use App\Models\Resources\ResourceTypeDetails;
 use App\Models\Resources\UnreviewedResources;
 use App\Models\Users\UsersAuth;
 use App\Models\Users\UsersAuthDetail;
@@ -37,11 +38,16 @@ class AdminsController extends Controller
                 $created_at = $resource->resource->created_at;
                 $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
+                $type = '【' . ResourceTypeDetails::find($resource->resource->resource_type)->type_name . '】';
+                $title = $resource->resource->title . '</br>';
+                $instruction = '说明：' . $resource->resource->instruction . '；';
+                $url = '链接：<a href=' . $resource->resource->url . '>' . $resource->resource->url . '</a>；';
+                $password = '密码：' . $resource->resource->password;
                 $res[] = [
-                    'movie_id' => $resource->resource->movies_id,
+                    'movie_id' => $resource->resource->movie->title,
                     'resource_id' => $resource->resource->resource_id,
-                    'name' => $resource->resource->title,
-                    'instruction' => $resource->resource->instruction,
+                    'name' => $resource->resource->movie->title,
+                    'instruction' => $type . $title . $instruction . $url . $password,
                     'sharer' => $user->name,
                     'created_at' => $created_at,
                 ];
