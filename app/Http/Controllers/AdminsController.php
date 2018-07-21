@@ -39,9 +39,9 @@ class AdminsController extends Controller
                 $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
                 $type = '【' . ResourceTypeDetails::find($resource->resource->resource_type)->type_name . '】';
-                $title = $resource->resource->title . '</br>';
-                $instruction = '说明：' . $resource->resource->instruction . '；';
-                $url = '链接：<a href=' . $resource->resource->url . '>' . $resource->resource->url . '</a>；';
+                $title = $resource->resource->title . '<br>';
+                $instruction = '说明：' . $resource->resource->instruction . '<br>';
+                $url = '链接：<a href=' . $resource->resource->url . '>资源链接</a>；';
                 $password = '密码：' . $resource->resource->password;
                 $res[] = [
                     'movie_id' => $resource->resource->movie->title,
