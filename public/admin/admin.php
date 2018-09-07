@@ -19,9 +19,11 @@ $header = array(
 );
 
 $admins = Curl::send(Config::$wuanlife_movie_api_url . '/admin', 'get', $header, []);
-//var_dump($admins);exit;
-if ($admins['code'] == 400) {
-    echo '<script>alert("权限不足");location.href = "./login.php"; </script>';
+if (200 !=$admins['code']) {
+    if ($admins['code'] == 400) {
+        echo '<script>alert("权限不足");location.href = "./login.php"; </script>';
+    }
+    echo '<script>alert('. $admins['error'] .'); </script>';
 }
 
 include './views/_header.php';
