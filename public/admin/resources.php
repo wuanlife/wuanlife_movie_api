@@ -21,6 +21,9 @@ $header = array(
 $resources = Curl::send(Config::$wuanlife_movie_api_url . '/resources/background', 'get', $header, []);
 
 if (200 !=$resources['code']) {
+    if ($resources['code'] == 400) {
+        echo '<script>alert("权限不足");location.href = "./login.php"; </script>';
+    }
     echo '<script>alert('. $resources['error'] .'); </script>';
 }
 include './views/_header.php';
