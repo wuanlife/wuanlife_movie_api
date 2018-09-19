@@ -21,6 +21,9 @@ $header = array(
 $resources = Curl::send(Config::$wuanlife_movie_api_url . '/resources/background', 'get', $header, []);
 
 if (200 !=$resources['code']) {
+    if ($resources['code'] == 400) {
+        echo '<script>alert("权限不足");location.href = "./login.php"; </script>';
+    }
     echo '<script>alert('. $resources['error'] .'); </script>';
 }
 include './views/_header.php';
@@ -46,10 +49,10 @@ include './views/_header.php';
                 <tbody>
                 <?php foreach ($resources['resources'] as $resource):?>
                 <tr>
-                    <td><?=$resource['name'] ?></td>
-                    <td><?=$resource['instruction'] ?></td>
+                    <td style=" white-space:nowrap"><?=$resource['name'] ?></td>
+                    <td style="word-wrap:break-word;word-break:break-all;"><?=$resource['instruction'] ?></td>
                     <td><?=$resource['sharer'] ?></td>
-                    <td><?=$resource['created_at'] ?></td>
+                    <td style=" white-space:nowrap"><?=$resource['created_at'] ?></td>
                     <td>
                         <div class="btn-group">
                         <button type="button" class="btn btn-success btn-sm award" data-movie_id="<?=$resource['movie_id'] ?>" data-resource_id="<?=$resource['resource_id'] ?>">加分</button>

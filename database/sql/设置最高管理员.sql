@@ -1,0 +1,1 @@
+INSERT INTO `users_auth`(`id`, `auth`) VALUES (用户id, 最高权限id);
