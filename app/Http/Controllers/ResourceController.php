@@ -129,7 +129,7 @@ class ResourceController extends Controller
     {
 
         try {
-            $validator = $this->validzhuyaator($request->all());
+            $validator = $this->validator($request->all());
             if ($validator->fails()) {
                 throw new \Exception($validator->errors(), 422);
             }
