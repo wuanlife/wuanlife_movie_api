@@ -125,7 +125,7 @@ class MoviesController extends Controller
             // 解析 url，获得豆瓣 api 地址并判断该影片是否存在
             $url = $this->parseUrl($url);
             $info = $this->accessApi($url);
-
+            $info = json_decode($info);
             DB::beginTransaction();
             // 构造(首页)分类实例
             $movie_type = new MoviesType();
@@ -286,16 +286,22 @@ class MoviesController extends Controller
      * 查询演员是否存在，如果不存在则添加演员信息
      * @param array $actors
      */
-    private function actorsExists(array $actors)
+    private function actorsExists(array &$actors)
     {
-        foreach ($actors as $actor) {
-            $actor_model = new Actors();
-            if (Actors::where('id', $actor->id)->first()) {
-                continue;
+        foreach ($actors as &$actor) {
+            if ($actor->id) {
+                $actor_model = new Actors();
+                if (Actors::where('id', $actor->id)->first()) {
+                    continue;
+                }
+                $actor_model->id = $actor->id;
+                $actor_model->name = $actor->name;
+                $actor_model->save();
+            } else {
+                $actor_model->name = $actor->name;
+                $actor_model->save();
+                $actor->id = $actor_model->incrementing;
             }
-            $actor_model->id = $actor->id;
-            $actor_model->name = $actor->name;
-            $actor_model->save();
         }
     }
 
