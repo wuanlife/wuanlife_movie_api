@@ -31,19 +31,21 @@ class MoviesController extends Controller
         }
 
         $movies = DB::table('movies_base')
-            ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
-            ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-            ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
-            ->leftJoin( DB::raw('(SELECT movies_id, max( created_at ) AS new_resources_created_at FROM resources GROUP BY movies_id ) resources'), 'resources.movies_id', 'movies_base.id')
-            ->where($where)
-            ->orderBy('new_resources_created_at', 'desc')
-            ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster', 'movies_rating.rating')
-            ->paginate($limit, ['*'], '', $offset);
+                    ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
+                    ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+                    ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
+                    ->leftJoin(DB::raw('(SELECT movies_id, max( created_at ) AS new_resources_created_at FROM resources GROUP BY movies_id ) resources'),
+                        'resources.movies_id', 'movies_base.id')
+                    ->where($where)
+                    ->orderBy('new_resources_created_at', 'desc')
+                    ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
+                        'movies_rating.rating')
+                    ->paginate($limit, ['*'], '', $offset);
         $res = [];
         foreach ($movies as $movie) {
             $res[] = [
-                'id' => $movie['id'],
-                'title' => $movie['title'],
+                'id'     => $movie['id'],
+                'title'  => $movie['title'],
                 'digest' => $movie['digest'],
                 'poster' => $movie['poster'],
                 'rating' => $movie['rating']
@@ -66,7 +68,7 @@ class MoviesController extends Controller
         try {
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                return response(['error' => 'Movie already exists'], 400);
+                return response(['error' => 'Movie does\'t exists'], 400);
             };
 
             // 获取影片详细信息影片信息
@@ -80,29 +82,29 @@ class MoviesController extends Controller
             // 获取影片导演信息
             $res = MoviesDirectors::where('movie_id', $id)->get();
             foreach ($res as $director) {
-                $directors[] = ['id' => $director->director_id, 'name' => $director->director->name];
+                $directors[] = ['id' => $director->director_id, 'name' => $director->director->name ?? ''];
             }
 
             //获取影片演员信息
             $res = MoviesActors::where('movie_id', $id)->get();
             foreach ($res as $actor) {
-                $actors[] = ['id' => $actor->actor_id, 'name' => $actor->actor->name];
+                $actors[] = ['id' => $actor->actor_id, 'name' => $actor->actor->name ?? ''];
             }
 
             return response([
-                'id' => $id,
-                'title' => $movie->title,
-                'poster_url' => MoviesPoster::find($id)->url,
+                'id'             => $id,
+                'title'          => $movie->title,
+                'poster_url'     => MoviesPoster::find($id)->url,
                 'original_title' => $movie->original_title,
-                'countries' => $movie->countries,
-                'year' => $movie->year,
-                'genres' => $genres ?? [],
-                'aka' => $movie->aka,
-                'directors' => $directors ?? [],
-                'casts' => $actors ?? [],
-                'summary' => $movie->summary->summary,
-                'rating' => $movie->rating->rating,
-                'url_douban' => $movie->url_douban,
+                'countries'      => $movie->countries,
+                'year'           => $movie->year,
+                'genres'         => $genres ?? [],
+                'aka'            => $movie->aka,
+                'directors'      => $directors ?? [],
+                'casts'          => $actors ?? [],
+                'summary'        => $movie->summary->summary,
+                'rating'         => $movie->rating->rating,
+                'url_douban'     => $movie->url_douban,
             ], 200);
         } catch (\Exception $e) {
             return \response(['error' => 'Failed to get movie info:' . $e->getMessage()], 400);
@@ -183,6 +185,9 @@ class MoviesController extends Controller
             $this->actorsExists($info->casts);
             // 构造 影片-演员 关系
             foreach ($info->casts as $actor) {
+                if (empty($actor->id)) {
+                    continue;
+                }
                 $actors = new MoviesActors();
                 $actors->movie_id = $info->id;
                 $actors->actor_id = $actor->id;
@@ -207,7 +212,7 @@ class MoviesController extends Controller
                 case 1:
                     return response([
                         'error' => 'Failed to add,resource already exists',
-                        'id' => $e->getMessage(),
+                        'id'    => $e->getMessage(),
                     ], 400);
                 default:
                     return response([
@@ -285,22 +290,16 @@ class MoviesController extends Controller
      * 查询演员是否存在，如果不存在则添加演员信息
      * @param array $actors
      */
-    private function actorsExists(array &$actors)
+    public function actorsExists(array &$actors)
     {
         foreach ($actors as &$actor) {
-            if ($actor->id) {
-                $actor_model = new Actors();
-                if (Actors::where('id', $actor->id)->first()) {
-                    continue;
-                }
-                $actor_model->id = $actor->id;
-                $actor_model->name = $actor->name;
-                $actor_model->save();
-            } else {
-                $actor_model->name = $actor->name;
-                $actor_model->save();
-                $actor->id = $actor_model->incrementing;
+            if (empty($actor->id) || Actors::where('id', $actor->id)->first()) {
+                continue;
             }
+            $actor_model = new Actors();
+            $actor_model->id = $actor->id;
+            $actor_model->name = $actor->name;
+            $actor_model->save();
         }
     }
 
