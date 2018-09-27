@@ -82,6 +82,7 @@ class ResourceController extends Controller
             'type'  => 'required',
             'title' => 'required',
             'url'   => 'required',
+            'password' => 'alpha_dash|between:1,8',
         ]);
     }
 
