@@ -125,7 +125,6 @@ class MoviesController extends Controller
             // 解析 url，获得豆瓣 api 地址并判断该影片是否存在
             $url = $this->parseUrl($url);
             $info = $this->accessApi($url);
-            $info = json_decode($info);
             DB::beginTransaction();
             // 构造(首页)分类实例
             $movie_type = new MoviesType();
