@@ -32,9 +32,9 @@ class ResourceController extends Controller
             };
             $data = $request->all();
             $resource = Resource::where([
-                'movies_id' => $id,
+                'movies_id'   => $id,
                 'resource_id' => $rid,
-                'sharer' => $request->get('id-token')->uid
+                'sharer'      => $request->get('id-token')->uid
             ]);
             if (!$resource->get()->count()) {
                 return response(['error' => 'Illegal request'], 400);
@@ -46,20 +46,20 @@ class ResourceController extends Controller
             $type_id = $type->type_id;
             if ($resource->update([
                 'resource_type' => $type_id,
-                'title' => $data['title'],
-                'password' => $data['password'],
-                'url' => $data['url'],
-                'instruction' => $data['instruction'] ?? '无'
+                'title'         => $data['title'],
+                'password'      => $data['password'] ?? '',
+                'url'           => $data['url'],
+                'instruction'   => $data['instruction'] ?? '无'
             ])) {
                 return response([
-                    'id' => $rid,
-                    'type' => $data['type'],
-                    'title' => $data['title'],
-                    'password' => $data['password'],
-                    'url' => $data['url'],
+                    'id'          => $rid,
+                    'type'        => $data['type'],
+                    'title'       => $data['title'],
+                    'password'    => $data['password'] ?? '',
+                    'url'         => $data['url'],
                     'instruction' => $data['instruction'] ?? '无',
-                    'sharer' => [
-                        'id' => $request->get('id-token')->uid,
+                    'sharer'      => [
+                        'id'   => $request->get('id-token')->uid,
                         'name' => $request->get('id-token')->uname
                     ]
                 ]);
@@ -79,9 +79,9 @@ class ResourceController extends Controller
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'type' => 'required',
+            'type'  => 'required',
             'title' => 'required',
-            'url' => 'required',
+            'url'   => 'required',
         ]);
     }
 
@@ -102,9 +102,9 @@ class ResourceController extends Controller
 
             $resource = Resource::where(
                 [
-                    'movies_id' => $id,
+                    'movies_id'   => $id,
                     'resource_id' => $rid,
-                    'sharer' => $request->get('id-token')->uid
+                    'sharer'      => $request->get('id-token')->uid
                 ]);
             if (!$resource->get()->count()) {
                 return response(['error' => 'Illegal request'], 400);
@@ -129,7 +129,7 @@ class ResourceController extends Controller
     {
 
         try {
-            $validator = $this->validator($request->all());
+            $validator = $this->validzhuyaator($request->all());
             if ($validator->fails()) {
                 throw new \Exception($validator->errors(), 422);
             }
@@ -152,14 +152,14 @@ class ResourceController extends Controller
             if ($res = $resource->save()) {
 
                 return response([
-                    'id' => $resource->id,
-                    'type' => $type_cn,
-                    'title' => $data['title'],
-                    'password' => $data['password'] ?? 'null',
-                    'url' => $data['url'],
+                    'id'          => $resource->id,
+                    'type'        => $type_cn,
+                    'title'       => $data['title'],
+                    'password'    => $data['password'] ?? '',
+                    'url'         => $data['url'],
                     'instruction' => $data['instruction'],
-                    'sharer' => [
-                        'id' => $request->get('id-token')->uid,
+                    'sharer'      => [
+                        'id'   => $request->get('id-token')->uid,
                         'name' => $request->get('id-token')->uname
                     ]
                 ]);
@@ -181,13 +181,13 @@ class ResourceController extends Controller
     protected function create(array $data, $id)
     {
         return Resource::create([
-            'movies_id' => $id,
+            'movies_id'     => $id,
             'resource_type' => $data['type'],
-            'title' => $data['title'],
-            'password' => $data['password'],
-            'url' => $data['url'],
-            'instruction' => $data['instruction'] ?? '无',
-            'sharer' => request()->get('id-token')->uid
+            'title'         => $data['title'],
+            'password'      => $data['password'] ?? '',
+            'url'           => $data['url'],
+            'instruction'   => $data['instruction'] ?? '无',
+            'sharer'        => request()->get('id-token')->uid
         ]);
     }
 
@@ -205,10 +205,6 @@ class ResourceController extends Controller
             }
             $resources = Resource::where('movies_id', $movie_id)->get();
             foreach ($resources as $key => $resource) {
-//                if (UnreviewedResources::find($resource['resource_id'])) {
-//                    unset($resources->$key);
-//                    continue;
-//                }
                 $response = Builder::requestInnerApi(
                     env('OIDC_SERVER'),
                     "/api/app/users/{$resource->sharer}"
@@ -219,14 +215,15 @@ class ResourceController extends Controller
                 $time = explode(' ', $created_at);
                 $created_at = $time[0] . 'T' . $time[1] . 'Z';
                 $res[] = [
-                    'id' => $resource->resource_id,
-                    'type' => ResourceTypeDetails::find($resource->resource_type)->type_name,
-                    'title' => $resource->title,
+                    'id'          => $resource->resource_id,
+                    'type'        => ResourceTypeDetails::find($resource->resource_type)->type_name,
+                    'title'       => $resource->title,
                     'instruction' => $resource->instruction,
-                    'url' => $resource->url,
-                    'create_at' => $created_at,
-                    'sharer' => [
-                        'id' => $user->id,
+                    'password'    => $resource->password,
+                    'url'         => $resource->url,
+                    'create_at'   => $created_at,
+                    'sharer'      => [
+                        'id'   => $user->id,
                         'name' => $user->name,
                     ]
                 ];
