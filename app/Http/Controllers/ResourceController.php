@@ -78,18 +78,18 @@ class ResourceController extends Controller
      */
     protected function validator(array $data)
     {
-        if (empty($data['password'])) {
-            return Validator::make($data, [
-                'type'  => 'required',
-                'title' => 'required',
-                'url'   => 'required',
-            ]);
-        } else {
+        if ($data['type'] == '网盘') {
             return Validator::make($data, [
                 'type'     => 'required',
                 'title'    => 'required',
                 'url'      => 'required',
                 'password' => 'between:1,8',
+            ]);
+        } else {
+            return Validator::make($data, [
+                'type'  => 'required',
+                'title' => 'required',
+                'url'   => 'required',
             ]);
         }
     }
