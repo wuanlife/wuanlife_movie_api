@@ -78,12 +78,20 @@ class ResourceController extends Controller
      */
     protected function validator(array $data)
     {
-        return Validator::make($data, [
-            'type'  => 'required',
-            'title' => 'required',
-            'url'   => 'required',
-            'password' => 'between:1,8',
-        ]);
+        if (empty($data['password'])) {
+            return Validator::make($data, [
+                'type'  => 'required',
+                'title' => 'required',
+                'url'   => 'required',
+            ]);
+        } else {
+            return Validator::make($data, [
+                'type'     => 'required',
+                'title'    => 'required',
+                'url'      => 'required',
+                'password' => 'between:1,8',
+            ]);
+        }
     }
 
     /**
