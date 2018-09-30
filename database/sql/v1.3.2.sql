@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS resources
   COMMENT '资源id',
   `resource_type` TINYINT UNSIGNED                                                   NOT NULL
   COMMENT '资源种类id',
-  `title`         VARCHAR(50)  COLLATE utf8_bin                                      NOT NULL
+  `title`         VARCHAR(150)  COLLATE utf8_bin                                      NOT NULL
   COMMENT '资源标题',
   `instruction`   VARCHAR(255) COLLATE utf8_bin                                      NOT NULL
   COMMENT '资源描述',
