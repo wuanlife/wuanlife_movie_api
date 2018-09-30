@@ -81,14 +81,14 @@ class ResourceController extends Controller
         if ($data['type'] == '网盘') {
             return Validator::make($data, [
                 'type'     => 'required',
-                'title'    => 'required',
+                'title'    => 'required|between:1,100',
                 'url'      => 'required',
                 'password' => 'between:1,8',
             ]);
         } else {
             return Validator::make($data, [
                 'type'  => 'required',
-                'title' => 'required',
+                'title' => 'required|between:1,100',
                 'url'   => 'required',
             ]);
         }
