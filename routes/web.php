@@ -11,6 +11,23 @@
 |
 */
 
+Route::group([
+    'prefix' => 'admin',
+    'middleware' => [
+        'logged',
+        'admin',
+    ]
+], function () {
+    Route::get('resources', 'Admin\ResourcesController@create')->name('admin.resources');
+});
+
+Route::group([
+    'prefix' => 'admin',
+    'namespace' => 'Admin',
+], function() {
+    Route::get('login', 'LoginController@create')->name('admin.login');
+    Route::post('login', 'LoginController@store')->name('admin.login');
+});
 
 
 
