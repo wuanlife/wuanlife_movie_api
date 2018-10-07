@@ -23,8 +23,12 @@ class AdminsController extends Controller
      */
     public function getUnreviewedResources(Request $request)
     {
+        $limit = $request->input('limit') ?? 20;
+        $offset = $request->input('offset') ?? 0;
+
+        $page = ($offset / $limit) + 1;
         try {
-            $resources = UnreviewedResources::with('resource.movie')->get();
+            $resources = UnreviewedResources::with('resource.movie')->paginate($limit, ['*'], '', $page);
             $res = [];
             foreach ($resources as $resource) {
                 if (!$resource->resource) {
