@@ -27,6 +27,7 @@ Route::group([
 ], function() {
     Route::get('login', 'LoginController@create')->name('admin.login');
     Route::post('login', 'LoginController@store')->name('admin.login');
+    Route::get('resources', 'ResourcesController@index')->name('admin.resources');
 });
 
 

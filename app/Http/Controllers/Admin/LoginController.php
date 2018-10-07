@@ -44,7 +44,7 @@ class LoginController extends Controller
         $user_id = $user_info->uid;
 
         if (!UsersAuth::checkAuth($user_id)) {
-            $request->session()->flash('danger', '权限不足');
+            session()->flash('danger', '权限不足');
             return redirect()->back()->withInput();
         }
 

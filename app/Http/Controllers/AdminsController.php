@@ -56,7 +56,7 @@ class AdminsController extends Controller
                     'created_at' => $created_at,
                 ];
             }
-            return response(['resources' => $res ?? []], 200);
+            return response(['resources' => $res ?? [], 'total' => $resources->total()], 200);
         } catch (\Exception $e) {
             return response(['error' => 'Failed to get unreviewed resource:  ' . $e->getMessage()], 400);
         }
