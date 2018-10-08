@@ -20,9 +20,9 @@
                 </thead>
                 <tbody>
                 @foreach ($resources['resources'] as $resource)
-                    <tr>
+                    <tr class="item-{{$resource['resource_id']}}">
                         <td style=" white-space:nowrap">{{$resource['name']}}</td>
-                        <td style="word-wrap:break-word;word-break:break-all;">{{$resource['instruction']}}</td>
+                        <td style="word-wrap:break-word;word-break:break-all;">{!!$resource['instruction']!!}</td>
                         <td>{{$resource['sharer']}}</td>
                         <td style=" white-space:nowrap">{{$resource['created_at']}}</td>
                         <td>
@@ -49,25 +49,31 @@
                 $total_page = ceil($resources['total'] / $limit);
             @endphp
             @if($resources['total'] > $limit)
-            <nav aria-label="Page navigation">
-                <ul class="pagination">
-                    <li class="page-item {{$page == 1 ? 'disabled' : ''}}">
-                        <a class="page-link" href="{{route('admin.resources', ['offset' => ($page - 2) * $limit, 'limit' => $limit])}}" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                            <span class="sr-only">Previous</span>
-                        </a>
-                    </li>
-                    @for($i = 1; $i <= $total_page; $i++)
-                    <li class="page-item {{$page == $i ? 'active' : ''}}"><a class="page-link" href="{{route('admin.resources', ['offset' => ($i - 1) * $limit, 'limit' => $limit])}}">{{$i}}</a></li>
-                    @endfor
-                    <li class="page-item {{$page == $total_page ? 'disabled' : ''}}">
-                        <a class="page-link" href="{{route('admin.resources', ['offset' => $page * $limit, 'limit' => $limit])}}" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                            <span class="sr-only">Next</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item {{$page == 1 ? 'disabled' : ''}}">
+                            <a class="page-link"
+                               href="{{route('admin.resources', ['offset' => ($page - 2) * $limit, 'limit' => $limit])}}"
+                               aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                        </li>
+                        @for($i = 1; $i <= $total_page; $i++)
+                            <li class="page-item {{$page == $i ? 'active' : ''}}"><a class="page-link"
+                                                                                     href="{{route('admin.resources', ['offset' => ($i - 1) * $limit, 'limit' => $limit])}}">{{$i}}</a>
+                            </li>
+                        @endfor
+                        <li class="page-item {{$page == $total_page ? 'disabled' : ''}}">
+                            <a class="page-link"
+                               href="{{route('admin.resources', ['offset' => $page * $limit, 'limit' => $limit])}}"
+                               aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
             @endif
         </div>
     </div>
@@ -77,35 +83,39 @@
 <script>
     $(function () {
         $('.award').click(function () {
-            let action = 'award';
-            let resource_id = $(this).data('resource_id');
+            let action = 'award'
+            let resource_id = $(this).data('resource_id')
             resource(action, resource_id)
         })
 
         $('.pass').click(function () {
-            let action = 'pass';
-            let resource_id = $(this).data('resource_id');
+            let action = 'pass'
+            let resource_id = $(this).data('resource_id')
             resource(action, resource_id)
         })
 
         $('.delete').click(function () {
             if (confirm('确定删除吗? ')) {
-                let action = 'delete';
-                let resource_id = $(this).data('resource_id');
-                resource(action, resource_id, 'delete')
+                let action = 'delete'
+                let resource_id = $(this).data('resource_id')
+                resource(action, resource_id)
             }
         })
 
-        function resource(action, resource_id, method = 'post') {
-            $.post('./resourcesAct.php', {action, resource_id, method}, function (res) {
-                console.log(res)
+        function resource(action, resource_id) {
+            $.ajax({
+                method: "POST",
+                url: "{{route('admin.resources')}}",
+                data: {action, resource_id}
+            }).done(function (res) {
                 if (res.code === 204) {
                     alert('操作成功');
-                    location.reload();
+                    $('.item-' + resource_id).remove();
                 } else {
                     alert(res.msg)
                 }
-            }, 'json')
+            });
+
         }
     })
 </script>

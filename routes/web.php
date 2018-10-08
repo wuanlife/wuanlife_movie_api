@@ -18,6 +18,7 @@ Route::group([
     Route::get('login', 'LoginController@create')->name('admin.login');
     Route::post('login', 'LoginController@store')->name('admin.login');
     Route::get('resources', 'ResourcesController@index')->name('admin.resources');
+    Route::post('resources', 'ResourcesController@auditResource')->where('id', '[0-9]+')->name('admin.resources');
 });
 
 
