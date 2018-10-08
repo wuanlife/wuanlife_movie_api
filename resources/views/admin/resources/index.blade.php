@@ -1,4 +1,4 @@
-@include('comment.header')
+@include('admin.comment.header')
 
 <div class="col-md-12">
     <br>
@@ -78,7 +78,7 @@
         </div>
     </div>
 </div>
-@include('comment.scripts')
+@include('admin.comment.scripts')
 </body>
 <script>
     $(function () {
@@ -115,7 +115,6 @@
                     alert(res.msg)
                 }
             });
-
         }
     })
 </script>

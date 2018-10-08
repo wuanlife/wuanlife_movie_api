@@ -19,8 +19,8 @@
             <div class="card">
                 <div class="card-header">午安影视管理中心</div>
                 <div class="card-body">
-                    @include('comment.messages')
-                    @include('comment.errors')
+                    @include('admin.comment.messages')
+                    @include('admin.comment.errors')
                     <form action="{{route('admin.login')}}" method="post">
                         {{csrf_field()}}
                         <input type="hidden" name="client_id" value="wuan">

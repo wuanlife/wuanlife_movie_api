@@ -21,10 +21,10 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
             <li class="nav-item">
-                <a class="nav-link" href="./admin.php">成员管理</span></a>
+                <a class="nav-link" href="{{route('admins.index')}}">成员管理</span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="./resources.php">内容管理</a>
+                <a class="nav-link" href="{{route('resources.index')}}">内容管理</a>
             </li>
 
         </ul>
@@ -35,7 +35,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="" onclick="event.preventDefault();  document.getElementById('logout-form').submit();">退出</a>
-                <form id="logout-form" action="./loginAct.php" method="post" style="display: none;">
+                <form id="logout-form" action="{{route('auth.logout')}}" method="post" style="display: none;">
                     <input type="hidden" name="action" value="logout">
                 </form>
             </li>
