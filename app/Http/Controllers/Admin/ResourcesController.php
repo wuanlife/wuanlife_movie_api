@@ -11,6 +11,10 @@ class ResourcesController extends Controller
     {
         $id_token = session('wuan.ID-Token');
         $access_token = session('wuan.Access-Token');
+        if (!$id_token || !$access_token) {
+            session()->flash('danger', '请先登陆');
+            return redirect(route('auth.login'));
+        }
         $limit = $request->query('limit') ?? env('LIMIT');
         $limit = $limit > env('LIMIT') ? env('LIMIT') : $limit;
         $offset = $request->query('offset') ?? 0;
@@ -24,16 +28,26 @@ class ResourcesController extends Controller
         ];
         $page = ($offset / $limit) + 1;
         $result = Http::request(env('APP_URL'), '/api/resources/background', 'GET', $header, $params);
-        $resources = json_decode($result['contents'], true);
-        return view('admin.resources.index', compact('resources', 'page', 'max_page'));
+        $resources = ['resources' => [], 'total' => 0];
+        if ($result['status_code'] !== 200) {
+            $error = json_decode($result['contents'])->error;
+            session()->flash('danger', $error);
+        } else {
+            $resources = json_decode($result['contents'], true);
+        }
+        return view('admin.resources.index', compact('resources', 'page'));
     }
 
     public function auditResource(Request $request)
     {
-        $action = $request->input('action');
-        $resource_id = $request->input('resource_id');
         $id_token = session('wuan.ID-Token');
         $access_token = session('wuan.Access-Token');
+        if (!$id_token || !$access_token) {
+            session()->flash('danger', '请先登陆');
+            return redirect(route('auth.login'));
+        }
+        $action = $request->input('action');
+        $resource_id = $request->input('resource_id');
         $action == 'delete' ? $method = 'DELETE' : $method = 'POST';
         $params = [
             'action' => $action,

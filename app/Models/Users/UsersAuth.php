@@ -26,7 +26,7 @@ class UsersAuth extends Model
                 '最高管理员',
             ]);
         }])->where('users_auth.id', $user_id)->first();
-        if (!$auth->detail) {
+        if (!$auth || !$auth->detail) {
             return false;
         }
         return true;

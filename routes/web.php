@@ -17,7 +17,7 @@ Route::group([
 ], function() {
     Route::get('login', 'LoginController@create')->name('auth.login');
     Route::post('login', 'LoginController@store')->name('auth.login');
-    Route::Delete('login', 'LoginController@destory')->name('auth.logout');
+    Route::delete('login', 'LoginController@destroy')->name('auth.logout');
     Route::get('resources', 'ResourcesController@index')->name('resources.index');
     Route::post('resources', 'ResourcesController@auditResource')->where('id', '[0-9]+')->name('resources.audit');
     Route::get('admins', 'AdminsController@index')->name('admins.index');

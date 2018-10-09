@@ -2,12 +2,13 @@
 
 <div class="col-md-12">
     <br>
-
     <div class="row">
         <div class="col-1">
             资源审核
         </div>
         <div class="col-11">
+            @include('admin.comment.messages')
+            @include('admin.comment.errors')
             <table class="table table-bordered">
                 <thead>
                 <tr>
@@ -44,37 +45,7 @@
                 @endforeach
                 </tbody>
             </table>
-            @php
-                $limit = env('LIMIT');
-                $total_page = ceil($resources['total'] / $limit);
-            @endphp
-            @if($resources['total'] > $limit)
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <li class="page-item {{$page == 1 ? 'disabled' : ''}}">
-                            <a class="page-link"
-                               href="{{route('resources.index', ['offset' => ($page - 2) * $limit, 'limit' => $limit])}}"
-                               aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
-                                <span class="sr-only">Previous</span>
-                            </a>
-                        </li>
-                        @for($i = 1; $i <= $total_page; $i++)
-                            <li class="page-item {{$page == $i ? 'active' : ''}}"><a class="page-link"
-                                                                                     href="{{route('resources.index', ['offset' => ($i - 1) * $limit, 'limit' => $limit])}}">{{$i}}</a>
-                            </li>
-                        @endfor
-                        <li class="page-item {{$page == $total_page ? 'disabled' : ''}}">
-                            <a class="page-link"
-                               href="{{route('resources.index', ['offset' => $page * $limit, 'limit' => $limit])}}"
-                               aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
-                                <span class="sr-only">Next</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            @endif
+            @include('admin.comment.pagination', ['total' => $resources['total'], 'name' => 'resources.index'])
         </div>
     </div>
 </div>

@@ -14,6 +14,8 @@
             团队管理
         </div>
         <div class="col-11">
+            @include('admin.comment.messages')
+            @include('admin.comment.errors')
             <table class="table table-bordered">
                 <thead>
                 <tr>
@@ -34,6 +36,7 @@
                 @endforeach
                 </tbody>
             </table>
+            @include('admin.comment.pagination', ['total' => $admins['total'], 'name' => 'admins.index'])
         </div>
     </div>
 </div>
