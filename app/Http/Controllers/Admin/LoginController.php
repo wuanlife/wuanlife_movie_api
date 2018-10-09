@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Builder;
 use App\Http\Controllers\Controller;
 use App\Models\Users\UsersAuth;
 use Illuminate\Http\Request;
@@ -61,7 +62,17 @@ class LoginController extends Controller
             $access_token =  $content['Access-Token'];
         }
 
-        $request->session()->put('wuan', ['ID-Token' => $id_token, 'Access-Token' => $access_token]);
+        // 获取用户信息
+        $response = Builder::requestInnerApi(
+            env('OIDC_SERVER'),
+            "api/app/users/{$user_id}"
+        );
+        $content = json_decode($response['contents'], true);
+        if ($response['status_code'] !== 200) {
+            return response(['error' => $content['error']], 400);
+        }
+
+        $request->session()->put('wuan', ['ID-Token' => $id_token, 'Access-Token' => $access_token, 'user_info' => $content]);
         session()->flash('success', '欢迎回来! ');
         return redirect()->intended(route('resources.index'));
     }
@@ -70,6 +81,6 @@ class LoginController extends Controller
     {
         $request->session()->flush();
         $request->session()->flash('success', '您已成功退出!');
-        return redirect('login');
+        return redirect(route('auth.login'));
     }
 }

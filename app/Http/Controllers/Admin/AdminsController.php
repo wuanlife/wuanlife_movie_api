@@ -12,6 +12,10 @@ class AdminsController extends Controller
     {
         $id_token = session('wuan.ID-Token');
         $access_token = session('wuan.Access-Token');
+        if (!$id_token || !$access_token) {
+            session()->flash('danger', '请先登陆');
+            return redirect(route('auth.login'));
+        }
         $limit = $request->query('limit') ?? env('LIMIT');
         $limit = $limit > env('LIMIT') ? env('LIMIT') : $limit;
         $offset = $request->query('offset') ?? 0;
@@ -25,15 +29,27 @@ class AdminsController extends Controller
         ];
         $page = ($offset / $limit) + 1;
         $result = Http::request(env('APP_URL'), '/api/admin', 'GET', $header, $params);
-        $admins = json_decode($result['contents'], true);
+
+
+        $admins = ['admins' => [], 'total' => 0];
+        if ($result['status_code'] !== 200) {
+            $error = json_decode($result['contents'])->error;
+            session()->flash('danger', $error);
+        } else {
+            $admins = json_decode($result['contents'], true);
+        }
         return view('admin.admins.index', compact('admins', 'page'));
     }
 
     public function action(Request $request)
     {
-        $method = $request->input('method');
         $id_token = session('wuan.ID-Token');
         $access_token = session('wuan.Access-Token');
+        if (!$id_token || !$access_token) {
+            session()->flash('danger', '请先登陆');
+            return redirect(route('auth.login'));
+        }
+        $method = $request->input('method');
 
         $id = '';
         $email = '';
