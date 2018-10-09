@@ -144,6 +144,11 @@ class AdminsController extends Controller
                 env('OIDC_SERVER'),
                 "/api/app/users/email/{$email}"
             );
+
+            if ($response['status_code'] !== 200) {
+                return response(['error' => json_decode($response['contents'])->error], 400);
+            }
+
             $id = json_decode($response['contents'])->id;
             $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
 

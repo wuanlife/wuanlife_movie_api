@@ -63,7 +63,7 @@ class LoginController extends Controller
 
         $request->session()->put('wuan', ['ID-Token' => $id_token, 'Access-Token' => $access_token]);
         session()->flash('success', '欢迎回来! ');
-        return redirect()->intended(route('admin.resources'));
+        return redirect()->intended(route('resources.index'));
     }
 
     public function destroy(Request $request)

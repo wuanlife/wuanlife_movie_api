@@ -53,7 +53,7 @@
                     <ul class="pagination">
                         <li class="page-item {{$page == 1 ? 'disabled' : ''}}">
                             <a class="page-link"
-                               href="{{route('admin.resources', ['offset' => ($page - 2) * $limit, 'limit' => $limit])}}"
+                               href="{{route('resources.index', ['offset' => ($page - 2) * $limit, 'limit' => $limit])}}"
                                aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                                 <span class="sr-only">Previous</span>
@@ -61,12 +61,12 @@
                         </li>
                         @for($i = 1; $i <= $total_page; $i++)
                             <li class="page-item {{$page == $i ? 'active' : ''}}"><a class="page-link"
-                                                                                     href="{{route('admin.resources', ['offset' => ($i - 1) * $limit, 'limit' => $limit])}}">{{$i}}</a>
+                                                                                     href="{{route('resources.index', ['offset' => ($i - 1) * $limit, 'limit' => $limit])}}">{{$i}}</a>
                             </li>
                         @endfor
                         <li class="page-item {{$page == $total_page ? 'disabled' : ''}}">
                             <a class="page-link"
-                               href="{{route('admin.resources', ['offset' => $page * $limit, 'limit' => $limit])}}"
+                               href="{{route('resources.index', ['offset' => $page * $limit, 'limit' => $limit])}}"
                                aria-label="Next">
                                 <span aria-hidden="true">&raquo;</span>
                                 <span class="sr-only">Next</span>
@@ -105,7 +105,7 @@
         function resource(action, resource_id) {
             $.ajax({
                 method: "POST",
-                url: "{{route('admin.resources')}}",
+                url: "{{route('resources.index')}}",
                 data: {action, resource_id}
             }).done(function (res) {
                 if (res.code === 204) {

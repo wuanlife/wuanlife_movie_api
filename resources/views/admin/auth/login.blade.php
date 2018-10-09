@@ -21,7 +21,7 @@
                 <div class="card-body">
                     @include('admin.comment.messages')
                     @include('admin.comment.errors')
-                    <form action="{{route('admin.login')}}" method="post">
+                    <form action="{{route('auth.login')}}" method="post">
                         {{csrf_field()}}
                         <input type="hidden" name="client_id" value="wuan">
                         <div class="form-group row">
