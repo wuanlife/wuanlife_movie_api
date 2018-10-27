@@ -23,8 +23,12 @@ class AdminsController extends Controller
      */
     public function getUnreviewedResources(Request $request)
     {
+        $limit = $request->input('limit') ?? env('LIMIT');
+        $offset = $request->input('offset') ?? 0;
+
+        $page = ($offset / $limit) + 1;
         try {
-            $resources = UnreviewedResources::with('resource.movie')->get();
+            $resources = UnreviewedResources::with('resource.movie')->paginate($limit, ['*'], '', $page);
             $res = [];
             foreach ($resources as $resource) {
                 if (!$resource->resource) {
@@ -52,9 +56,9 @@ class AdminsController extends Controller
                     'created_at' => $created_at,
                 ];
             }
-            return response(['resources' => $res ?? []], 200);
+            return response(['resources' => $res ?? [], 'total' => $resources->total()], 200);
         } catch (\Exception $e) {
-            return response(['error' => 'Failed to get unreviewed resource:  ' . $e->getMessage()], 400);
+            return response(['error' => 'Failed to get unreviewed resource'], 400);
         }
     }
 
@@ -140,6 +144,11 @@ class AdminsController extends Controller
                 env('OIDC_SERVER'),
                 "/api/app/users/email/{$email}"
             );
+
+            if ($response['status_code'] !== 200) {
+                return response(['error' => json_decode($response['contents'])->error], 400);
+            }
+
             $id = json_decode($response['contents'])->id;
             $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
 
@@ -199,17 +208,19 @@ class AdminsController extends Controller
 
     /**
      * 获取管理员列表
+     * @param Request $request
      * @return \Illuminate\Contracts\Routing\ResponseFactory|\Symfony\Component\HttpFoundation\Response
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function listAdmin()
-    {    
-    try {
-            $users = UsersAuth::with([
-                'detail' => function ($query) {
-                    $query->where('identity', '管理员');
-                }
-            ])->get();
+    public function listAdmin(Request $request)
+    {
+        $limit = $request->input('limit') ?? env('LIMIT');
+        $offset = $request->input('offset') ?? 0;
+        $page = ($offset / $limit) + 1;
+        try {
+            $users = UsersAuth::with(['detail' => function ($query) {
+                $query->where('identity', '管理员');
+            }])->paginate($limit, ['*'], '', $page);
             $res = [];
             foreach ($users as $user) {
                 if (!$user->detail) {
@@ -224,7 +235,7 @@ class AdminsController extends Controller
                     'name' => $user_info->name,
                 ];
             }
-            return response(['admins' => $res ?? []], 200);
+            return response(['admins' => $res ?? [], 'total' => $users->total()], 200);
         } catch (\Exception $e) {
             return response(['error' => 'Failed to get admins list'], 400);
         }

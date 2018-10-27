@@ -11,6 +11,18 @@
 |
 */
 
+Route::group([
+    'prefix' => 'admin',
+    'namespace' => 'Admin',
+], function() {
+    Route::get('login', 'LoginController@create')->name('auth.login');
+    Route::post('login', 'LoginController@store')->name('auth.login');
+    Route::delete('login', 'LoginController@destroy')->name('auth.logout');
+    Route::get('resources', 'ResourcesController@index')->name('resources.index');
+    Route::post('resources', 'ResourcesController@auditResource')->where('id', '[0-9]+')->name('resources.audit');
+    Route::get('admins', 'AdminsController@index')->name('admins.index');
+    Route::post('admins', 'AdminsController@action')->name('admins.action');
+});
 
 
 
