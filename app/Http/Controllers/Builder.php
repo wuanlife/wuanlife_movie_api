@@ -9,6 +9,7 @@ class Builder extends Controller
 {
     /**
      * 构造内部通信请求
+     * @param $base_url
      * @param $url
      * @param string $method
      * @param array $header
@@ -18,7 +19,7 @@ class Builder extends Controller
      */
     public static function requestInnerApi($base_url, $url, $method = 'GET', $header = [], $param = [])
     {
-        $client = new Client(['base_uri' => $base_url]);
+        $client = new Client(['base_uri' => $base_url, 'http_errors' => false]);
         $params = array_merge(self::getParam(), $param);
         $response = $client->request($method, $url, [
                 'headers' => $header,

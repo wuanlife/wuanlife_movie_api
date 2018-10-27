@@ -1,33 +1,4 @@
-<?php
-session_start();
-if (!isset($_SESSION['id_token'])) {
-    echo '<script>alert("请先登陆");location.href = "./login.php"; </script>';
-}
-
-include './Curl.php';
-include './Config.php';
-
-$header[] = 'ID-Token:' . $_SESSION['id_token'];
-
-$result = Curl::send(Config::$wuanlife_oidc_url . '/auth', 'post', $header, ['scope' => 1]);
-
-$_SESSION['access_token'] = $result['Access-Token'];
-
-$header = array(
-    'ID-Token:' . $_SESSION['id_token'],
-    'Access-Token:' . $_SESSION['access_token'],
-);
-
-$admins = Curl::send(Config::$wuanlife_movie_api_url . '/admin', 'get', $header, []);
-if (200 !=$admins['code']) {
-    if ($admins['code'] == 400) {
-        echo '<script>alert("权限不足");location.href = "./login.php"; </script>';
-    }
-    echo '<script>alert('. $admins['error'] .'); </script>';
-}
-
-include './views/_header.php';
-?>
+@include('admin.comment.header')
 <div class="col-12">
     <br>
     <div class="row justify-content-center">
@@ -43,6 +14,8 @@ include './views/_header.php';
             团队管理
         </div>
         <div class="col-11">
+            @include('admin.comment.messages')
+            @include('admin.comment.errors')
             <table class="table table-bordered">
                 <thead>
                 <tr>
@@ -51,18 +24,19 @@ include './views/_header.php';
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($admins['admins'] as $admin):?>
-                    <tr>
-                        <td><?=$admin['name'] ?></td>
-                        <td>
-                            <div class="btn-group">
-                                <button type="button" class="btn btn-danger btn-sm delete" data-id="<?=$admin['id'] ?>">删除</button>
-                            </div>
-                        </td>
-                    </tr>
-                <?php endforeach;?>
+                @foreach($admins['admins'] as $admin)
+                <tr class="item-{{$admin['id']}}">
+                    <td>{{$admin['name']}}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-danger btn-sm delete" data-id="{{$admin['id']}}">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
                 </tbody>
             </table>
+            @include('admin.comment.pagination', ['total' => $admins['total'], 'name' => 'admins.index'])
         </div>
     </div>
 </div>
@@ -99,12 +73,11 @@ include './views/_header.php';
         </div>
     </div>
 </div>
-
-<?php include './views/_scripts.php' ?>
+@include('admin.comment.scripts')
 </body>
 <script>
     $(function() {
-        $('.delete').click(function() {
+        $('table').on('click', '.delete', function () {
             if(confirm('确定删除吗? ')) {
                 let action = 'delete';
                 let id = $(this).data('id');
@@ -120,15 +93,33 @@ include './views/_header.php';
 
         function admins(data)
         {
-            $.post('./adminAct.php', data, function (res) {
-                console.log(res)
+            $.ajax({
+                method: "POST",
+                url: "{{route('admins.action')}}",
+                data: data
+            }).done(function (res) {
                 if (res.code === 204 || res.code === 200) {
                     alert('操作成功');
-                    location.reload();
+                    if (204 === res.code) {
+                        $('.item-' + data.id).remove();
+                    }
+                    if (200 === res.code) {
+                        $('#email').val('')
+                        $('#myModal').modal('hide')
+                        let tr = '<tr class="item-'+ res.data.id +'">\n' +
+                            '    <td>'+ res.data.name +'</td>\n' +
+                            '    <td>\n' +
+                            '        <div class="btn-group">\n' +
+                            '            <button type="button" class="btn btn-danger btn-sm delete" data-id="'+ res.data.id +'">删除</button>\n' +
+                            '        </div>\n' +
+                            '    </td>\n' +
+                            '</tr>'
+                        $('tbody').append(tr)
+                    }
                 } else {
                     alert(res.msg)
                 }
-            }, 'json')
+            });
         }
     })
 </script>
