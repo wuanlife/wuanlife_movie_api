@@ -34,12 +34,13 @@ class MoviesController extends Controller
                     ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
                     ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
                     ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
+                    ->join('movies_type_details','movies_type_details.type_id','movies_type.type_id')
                     ->leftJoin(DB::raw('(SELECT movies_id, max( created_at ) AS new_resources_created_at FROM resources GROUP BY movies_id ) resources'),
                         'resources.movies_id', 'movies_base.id')
                     ->where($where)
                     ->orderBy('new_resources_created_at', 'desc')
                     ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
-                        'movies_rating.rating')
+                        'movies_rating.rating', 'type_name')
                     ->paginate($limit, ['*'], '', $offset);
         $res = [];
         foreach ($movies as $movie) {
