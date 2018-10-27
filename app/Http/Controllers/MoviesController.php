@@ -27,7 +27,7 @@ class MoviesController extends Controller
         if (!empty($request->input('type'))) {
             //type 参数也存在
             $type = $request->input('type');
-            $where['type_id'] = $type;
+            $where['movies_type.type_id'] = $type;
         }
 
         $movies = DB::table('movies_base')
@@ -49,7 +49,8 @@ class MoviesController extends Controller
                 'title'  => $movie['title'],
                 'digest' => $movie['digest'],
                 'poster' => $movie['poster'],
-                'rating' => $movie['rating']
+                'rating' => $movie['rating'],
+                'type_name' => $movie['type_name'],
             ];
         }
 
