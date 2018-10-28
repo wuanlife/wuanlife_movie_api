@@ -77,7 +77,7 @@
             $.ajax({
                 method: "POST",
                 url: "{{route('resources.index')}}",
-                data: {action, resource_id}
+                data: {action, resource_id, '_token':'{{csrf_token()}}'}
             }).done(function (res) {
                 if (res.code === 204) {
                     alert('操作成功');

@@ -34,7 +34,12 @@
                 <a class="nav-link" href="#">{{session('wuan.user_info.name')}}</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" onclick="event.preventDefault();  document.getElementById('logout-form').submit();">退出</a>
+                <a class="nav-link" href="#" onclick="event.preventDefault();let r=confirm('确定退出吗？');
+                if (r==true)
+                {
+                    document.getElementById('logout-form').submit();
+                }
+                ">退出</a>
                 <form id="logout-form" action="{{route('auth.logout')}}" method="post" style="display: none;">
                     {{csrf_field()}}
                     <input type="hidden" name="_method" value="DELETE">
