@@ -93,6 +93,7 @@
 
         function admins(data)
         {
+            data._token = '{{csrf_token()}}'
             $.ajax({
                 method: "POST",
                 url: "{{route('admins.action')}}",
