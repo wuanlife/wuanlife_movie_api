@@ -10,6 +10,7 @@ use App\Models\Users\UsersAuth;
 use App\Models\Users\UsersAuthDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -48,17 +49,23 @@ class AdminsController extends Controller
                 $url = '链接：<a target="_blank" href=' . $resource->resource->url . '>资源链接</a>；';
                 $password = '密码：' . $resource->resource->password;
                 $res[] = [
-                    'movie_id' => $resource->resource->movie->title,
+                    'movie_id'    => $resource->resource->movie->title,
                     'resource_id' => $resource->resource->resource_id,
-                    'name' => $resource->resource->movie->title,
+                    'name'        => $resource->resource->movie->title,
                     'instruction' => $type . $title . $instruction . $url . $password,
-                    'sharer' => $user->name,
-                    'created_at' => $created_at,
+                    'sharer'      => $user->name,
+                    'created_at'  => $created_at,
                 ];
             }
             return response(['resources' => $res ?? [], 'total' => $resources->total()], 200);
         } catch (\Exception $e) {
-            return response(['error' => 'Failed to get unreviewed resource'], 400);
+            Log::error(
+                "'Failed to get un-reviewed resource:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'offset' => $offset,
+                    'limit'  => $limit
+                ]);
+            return response(['error' => '获取待审核资源列表失败'], 400);
         }
     }
 
@@ -73,7 +80,7 @@ class AdminsController extends Controller
         $type = $request->input('action');
         $unrev_result = UnreviewedResources::where('resource_id', $resource_id)->first();
         if (!$unrev_result) {
-            return response(['error' => 'The resource not found'], 400);
+            return response(['error' => '资源不存在'], 404);
         }
         DB::beginTransaction();
         try {
@@ -85,7 +92,7 @@ class AdminsController extends Controller
                 case 'pass':
                     break;
                 default:
-                    throw new \Exception('Wrong enum type');
+                    return response(['error' => '非法请求，错误的审核类型'], 400);
             }
             $unrev_result->delete();
             DB::commit();
@@ -93,7 +100,13 @@ class AdminsController extends Controller
             return response([], 204);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response(['error' => 'Failed to audit: ' . $e->getMessage()], 400);
+            Log::error(
+                "Failed to audit:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'type'        => $type,
+                    'resource_id' => $resource_id,
+                ]);
+            return response(['error' => '审核失败'], 400);
         }
     }
 
@@ -106,7 +119,7 @@ class AdminsController extends Controller
     {
         $unrev_result = UnreviewedResources::where('resource_id', $resource_id)->first();
         if (!$unrev_result) {
-            return response(['error' => 'The resource not found'], 400);
+            return response(['error' => '指定的资源不存在'], 404);
         }
         DB::beginTransaction();
         try {
@@ -117,7 +130,12 @@ class AdminsController extends Controller
             return response([], 204);
         } catch (\Exception $e) {
             DB::rollback();
-            return response(['error' => 'Failed to delete: '], 400);
+            Log::error(
+                "Failed to delete:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'resource_id' => $resource_id,
+                ]);
+            return response(['error' => '无法删除指定资源'], 400);
         }
     }
 
@@ -130,9 +148,14 @@ class AdminsController extends Controller
     public function addAdmin(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'email' => 'required|email'
-            ]);
+            $validator = Validator::make($request->all(),
+                [
+                    'email' => 'required|email'
+                ],
+                [
+                    'email.require' => '邮箱地址不能为空',
+                    'email.email'   => '请输入正确的邮箱地址',
+                ]);
             if ($validator->fails()) {
                 return response(['error' => $validator->errors()->first()], 422);
             }
@@ -158,7 +181,7 @@ class AdminsController extends Controller
                 'id' => $id,
             ])->first()
             ) {
-                return response(['error' => 'The user is already an admin or top admin'], 400);
+                return response(['error' => '该用户已是管理员或最高管理员'], 400);
             }
 
             // 添加管理员
@@ -173,15 +196,20 @@ class AdminsController extends Controller
             $user_info = json_decode($response['contents']);
             if ($res) {
                 return response([
-                    'id' => $user_info->id,
-                    'name' => $user_info->name,
+                    'id'         => $user_info->id,
+                    'name'       => $user_info->name,
                     'avatar_url' => $user_info->avatar_url,
                 ], 200);
             } else {
-                return response(['error' => 'Failed to add admin'], 400);
+                return response(['error' => '添加管理员失败'], 400);
             }
         } catch (\Exception $e) {
-            return response(['error' => 'Failed to add admin: ' . $e->getMessage()], 400);
+            Log::error(
+                "Failed to add admin:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'email' => $email ?? 'null',
+                ]);
+            return response(['error' => '添加管理员失败'], 400);
         }
     }
 
@@ -195,14 +223,14 @@ class AdminsController extends Controller
         $auth = UsersAuthDetail::where('identity', '管理员')->first()->id;
 
         $res = UsersAuth::where([
-            'id' => $id,
+            'id'   => $id,
             'auth' => $auth,
         ])->delete();
 
         if ($res) {
             return response([], 204);
         } else {
-            return response(['error' => 'Illegal request'], 400);
+            return response(['error' => '非法请求'], 400);
         }
     }
 
@@ -218,9 +246,11 @@ class AdminsController extends Controller
         $offset = $request->input('offset') ?? 0;
         $page = ($offset / $limit) + 1;
         try {
-            $users = UsersAuth::with(['detail' => function ($query) {
-                $query->where('identity', '管理员');
-            }])->paginate($limit, ['*'], '', $page);
+            $users = UsersAuth::with([
+                'detail' => function ($query) {
+                    $query->where('identity', '管理员');
+                }
+            ])->paginate($limit, ['*'], '', $page);
             $res = [];
             foreach ($users as $user) {
                 if (!$user->detail) {
@@ -231,13 +261,19 @@ class AdminsController extends Controller
 
                 $user_info = json_decode($response['contents']);
                 $res[] = [
-                    'id' => $user->id,
+                    'id'   => $user->id,
                     'name' => $user_info->name,
                 ];
             }
             return response(['admins' => $res ?? [], 'total' => $users->total()], 200);
         } catch (\Exception $e) {
-            return response(['error' => 'Failed to get admins list'], 400);
+            Log::error(
+                "Failed to get admins list:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'limit'  => $limit,
+                    'offset' => $offset,
+                ]);
+            return response(['error' => '获取管理员列表错误'], 400);
         }
     }
 }

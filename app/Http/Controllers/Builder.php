@@ -23,14 +23,15 @@ class Builder extends Controller
         $params = array_merge(self::getParam(), $param);
         $response = $client->request($method, $url, [
                 'headers' => $header,
-                'json' => $params,
+                'json'    => $params,
             ]
         );
 
-        return [
-            'status_code' => $response->getStatusCode(),
-            'contents' => $response->getBody()->getContents(),
-        ];
+        return
+            [
+                'status_code' => $response->getStatusCode(),
+                'contents'    => $response->getBody()->getContents(),
+            ];
     }
 
     /**
@@ -51,11 +52,11 @@ class Builder extends Controller
         $key = Hash::make($info . $secret);
 
         $info = [
-            'app' => $app,
+            'app'  => $app,
             'info' => $info,
-            'key' => $key,
+            'key'  => $key,
         ];
 
-        return array_merge($info,$param);
+        return array_merge($info, $param);
     }
 }

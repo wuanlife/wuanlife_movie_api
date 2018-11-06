@@ -9,7 +9,9 @@ use App\Models\Movies\{
     MoviesActors, MoviesBase, MoviesDetails, MoviesDirectors, MoviesGenres, MoviesGenresDetails, MoviesPoster, MoviesRating, MoviesSummary, MoviesType
 };
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class MoviesController extends Controller
 {
@@ -25,39 +27,49 @@ class MoviesController extends Controller
         $offset = $request->input('offset') ?? 0;
         $where = [];
         if (!empty($request->input('type'))) {
-            //type 参数也存在
+            //type 参数存在
             $type = $request->input('type');
             $where['movies_type.type_id'] = $type;
         }
 
-        $movies = DB::table('movies_base')
-                    ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
-                    ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
-                    ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
-                    ->join('movies_type_details','movies_type_details.type_id','movies_type.type_id')
-                    ->leftJoin(DB::raw('(SELECT movies_id, max( created_at ) AS new_resources_created_at FROM resources GROUP BY movies_id ) resources'),
-                        'resources.movies_id', 'movies_base.id')
-                    ->where($where)
-                    ->orderBy('new_resources_created_at', 'desc')
-                    ->select('movies_base.id', 'movies_base.title', 'movies_base.digest', 'movies_poster.url as poster',
-                        'movies_rating.rating', 'type_name')
-                    ->paginate($limit, ['*'], '', $offset);
-        $res = [];
-        foreach ($movies as $movie) {
-            $res[] = [
-                'id'     => $movie['id'],
-                'title'  => $movie['title'],
-                'digest' => $movie['digest'],
-                'poster' => $movie['poster'],
-                'rating' => $movie['rating'],
-                'type_name' => $movie['type_name'],
-            ];
+        try {
+            $movies = DB::table('movies_base')
+                        ->join('movies_poster', 'movies_poster.id', 'movies_base.id')
+                        ->join('movies_rating', 'movies_rating.id', 'movies_base.id')
+                        ->join('movies_type', 'movies_type.movies_id', 'movies_base.id')
+                        ->join('movies_type_details', 'movies_type_details.type_id', 'movies_type.type_id')
+                        ->leftJoin(DB::raw('(SELECT movies_id, max(created_at) AS new_resources_created_at FROM resources GROUP BY movies_id ) resources'),
+                            'resources.movies_id', 'movies_base.id')
+                        ->where($where)
+                        ->orderBy('new_resources_created_at', 'desc')
+                        ->select('movies_base.id', 'movies_base.title', 'movies_base.digest',
+                            'movies_poster.url as poster',
+                            'movies_rating.rating', 'type_name')
+                        ->paginate($limit, ['*'], '', $offset);
+            $res = [];
+            foreach ($movies as $movie) {
+                $res[] = [
+                    'id'        => $movie['id'],
+                    'title'     => $movie['title'],
+                    'digest'    => $movie['digest'],
+                    'poster'    => $movie['poster'],
+                    'rating'    => $movie['rating'],
+                    'type_name' => $movie['type_name'],
+                ];
+            }
+            $base['movies'] = $res;
+            $base['total'] = $movies->total();
+            return response($base, 200);
+        } catch (\Exception $e) {
+            Log::error(
+                "Failed to get movies list:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'offset' => $offset,
+                    'limit'  => $limit,
+                    'type'   => $type ?? 'null',
+                ]);
+            return response('未知错误', 400);
         }
-
-        $base['movies'] = $res;
-        $base['total'] = $movies->total();
-
-        return response($base, 200);
     }
 
     /**
@@ -70,7 +82,7 @@ class MoviesController extends Controller
         try {
             // 检测该影片是否存在于数据库中
             if (!MoviesBase::where('id', $id)->first()) {
-                return response(['error' => 'Movie does\'t exists'], 400);
+                return response(['error' => '影片信息不存在，请先添加'], 400);
             };
 
             // 获取影片详细信息影片信息
@@ -109,7 +121,12 @@ class MoviesController extends Controller
                 'url_douban'     => $movie->url_douban,
             ], 200);
         } catch (\Exception $e) {
-            return \response(['error' => 'Failed to get movie info:' . $e->getMessage()], 400);
+            Log::error(
+                "Failed to get movie info:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'movies_id' => $movie ?? 'null',
+                ]);
+            return \response(['error' => '获取影片信息失败'], 400);
         }
     }
 
@@ -122,13 +139,23 @@ class MoviesController extends Controller
     {
         try {
             if (!$type = $request->input('type')) {
-                return response(['error' => 'Missing requested param: type'], 422);
+                return response(['error' => '缺少必要参数类型：type'], 422);
             }
             $url = $request->input('url');
 
             // 解析 url，获得豆瓣 api 地址并判断该影片是否存在
-            $url = $this->parseUrl($url);
-            $info = $this->accessApi($url);
+            $movie_id = $this->getMoviesIdByUrl($url);
+            if ($movie_id === false) {
+                return response(['error' => 'Url 错误', 400]);
+            }
+            if (!$this->moviesExists($movie_id)) {
+                return response(['error' => '影片不存在或未找到对应的影片信息', 400]);
+            }
+            $douban_url = $this->getDouBanUrl($movie_id);
+            $info = $this->accessApi($douban_url);
+            if ($info === false) {
+                return response(['error' => '影片信息不存在', 404]);
+            }
             DB::beginTransaction();
             // 构造(首页)分类实例
             $movie_type = new MoviesType();
@@ -207,53 +234,58 @@ class MoviesController extends Controller
             }
             DB::commit();
 
-            return response(["id" => $info->id]);
+            return response(['id' => $info->id]);
         } catch (\Exception $e) {
             DB::rollBack();
-            switch ($e->getCode()) {
-                case 1:
-                    return response([
-                        'error' => 'Failed to add,resource already exists',
-                        'id'    => $e->getMessage(),
-                    ], 400);
-                default:
-                    return response([
-                        'error' => 'Failed to add: ' . (string)$e->getMessage()
-                    ], 400);
-            }
+            Log::error(
+                "Failed to add movies:{$e->getMessage()}.In " . __METHOD__ . " on line {$e->getLine()}",
+                [
+                    'url' => $url ?? 'null',
+                    'douban_url' => $douban_url ?? 'null',
+                    'movie_id' => $movie_id ?? 'null',
+                ]);
+            return \response(['error' => '添加影片失败'], 400);
         }
     }
 
     /**
-     * 将原始url解析为豆瓣api—url
-     * @param $url
-     * @return string
-     * @throws \Exception
+     * 将原始 url 解析为豆瓣 api url
+     * @param $id
+     * @return mixed
      */
-    private function parseUrl(String $url)
+    private function getDouBanUrl($id)
     {
+        // 组合出豆瓣 api 的地址
+        return env('DOUBAN_API_BASE_URL') . '/' . $id;
+    }
 
-        // 正则出影片id
+    /**
+     * 根据 id 判断影片是否存在
+     * @param $id
+     * @return bool
+     */
+    private function moviesExists($id)
+    {
+        return MoviesBase::where('id', $id)->first() !== null;
+    }
+
+    /**
+     * 根据豆瓣 url 获取影片 id
+     * @param String $url
+     * @return bool
+     */
+    private function getMoviesIdByUrl(String $url)
+    {
         $pattern = "$.+\/subject\/([0-9]+).?$";
         preg_match($pattern, $url, $res);
         if (count($res) < 2) {
-            throw new \Exception('Wrong url');
+            return false;
         }
-        $id = $res[1];
-
-        // 检测该影片是否存在于数据库中
-        if (MoviesBase::where('id', $id)->first()) {
-            throw new \Exception($id, 1);
-        };
-
-        // 组合出豆瓣 api 的地址
-        $url = env('DOUBAN_API_BASE_URL') . '/' . $id;
-
-        return $url;
+        return $res[1];
     }
 
     /**
-     * 通过豆瓣api获取影片信息
+     * 通过豆瓣 api 获取影片信息
      * @param $url
      * @return mixed
      * @throws \Exception
@@ -262,13 +294,13 @@ class MoviesController extends Controller
     {
         //获取豆瓣 api 返回的 Json
         if (!$info_json = file_get_contents($url)) {
-            return response(['error' => 'Movie info does not exists'], 404);
+            return false;
         }
         return json_decode($info_json);
     }
 
     /**
-     * 查询genres是否存在，如果不存在则添加信息，并返回带id的genres数组
+     * 查询 genres 是否存在，如果不存在则添加信息，并返回带 id 的 genres 数组
      * @param array $genres
      * @return array
      */
