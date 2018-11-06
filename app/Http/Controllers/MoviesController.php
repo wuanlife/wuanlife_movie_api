@@ -9,7 +9,6 @@ use App\Models\Movies\{
     MoviesActors, MoviesBase, MoviesDetails, MoviesDirectors, MoviesGenres, MoviesGenresDetails, MoviesPoster, MoviesRating, MoviesSummary, MoviesType
 };
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -213,7 +212,7 @@ class MoviesController extends Controller
             // 检测影片演员是否存在于数据库中，如果不存在则添加数据
             $this->actorsExists($info->casts);
             // 构造 影片-演员 关系
-            foreach ($info->casts as $actor) {
+            foreach ($info->attrs->casts as $actor) {
                 if (empty($actor->id)) {
                     continue;
                 }
@@ -226,7 +225,7 @@ class MoviesController extends Controller
             // 创建影片导演信息
             $this->directorsExists($info->directors);
             // 构造 影片-导演 关系
-            foreach ($info->directors as $director) {
+            foreach ($info->attrs->directors as $director) {
                 $directors = new MoviesDirectors();
                 $directors->movie_id = $info->id;
                 $directors->director_id = $director->id;
